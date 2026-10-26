@@ -6,7 +6,7 @@ const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMon
 const dateLabel=s=>s?new Date(s+'T12:00:00').toLocaleDateString('de-DE'):'–';
 const state={session:null,spaces:[],space:null,accounts:[],categories:[],transactions:[],recurring:[],bills:[],notes:[],period:{from:'',to:''},tab:'dashboard'};
 let client;let editingRecurringId=null;let bookingTarget=null;
-function message(msg,ok=false){$('globalMsg').textContent=msg;$('globalMsg').className='message'+(ok?' good':'');window.scrollTo({top:0,behavior:'smooth'})}
+let messageTimer;function message(msg,ok=false){clearTimeout(messageTimer);$('globalMsg').textContent=msg;$('globalMsg').className='message'+(ok?' good':'');if(ok)messageTimer=setTimeout(()=>{$('globalMsg').classList.add('hidden')},3500);else window.scrollTo({top:0,behavior:'smooth'})}
 function clearMessage(){$('globalMsg').classList.add('hidden')}
 function showError(err){console.error(err);message(err?.message||String(err))}
 async function run(task){clearMessage();try{await task()}catch(e){showError(e)}}
