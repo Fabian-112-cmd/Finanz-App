@@ -83,6 +83,48 @@
 }
 </style>
 
+
+<style>
+/* iPhone dashboard spacing and fully visible transaction amounts */
+@media (max-width:620px) {
+  #dashboard > .metrics { margin-bottom:18px; }
+  #dashboard > .grid { gap:14px; margin-bottom:17px; }
+  #dashboard > .grid > .panel { margin-bottom:0; }
+  #dashboard #dashboardTransactions .scroll { overflow-x:visible; width:100%; }
+  #dashboard #dashboardTransactions table,
+  #dashboard #dashboardTransactions tbody,
+  #dashboard #dashboardTransactions tr,
+  #dashboard #dashboardTransactions td { display:block; width:100%; }
+  #dashboard #dashboardTransactions thead { display:none; }
+  #dashboard #dashboardTransactions tr {
+    border:1px solid #e2ebe5;
+    border-radius:12px;
+    padding:10px 12px;
+    margin:0 0 10px;
+    background:#fff;
+    overflow-wrap:anywhere;
+  }
+  #dashboard #dashboardTransactions td {
+    padding:3px 0;
+    border:0;
+    font-size:13px;
+    line-height:1.4;
+    text-align:left;
+  }
+  #dashboard #dashboardTransactions td:first-child { color:#6d8079; font-size:12px; }
+  #dashboard #dashboardTransactions td:nth-child(2) { font-weight:700; font-size:15px; }
+  #dashboard #dashboardTransactions td:nth-child(3),
+  #dashboard #dashboardTransactions td:nth-child(4) { color:#6d8079; }
+  #dashboard #dashboardTransactions td:last-child {
+    font-weight:750;
+    font-size:18px;
+    text-align:right;
+    white-space:nowrap;
+    font-variant-numeric:tabular-nums;
+  }
+}
+</style>
+
 </head><body>
 <div id="auth"><div class="panel"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail-Adresse<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button class="primary">Anmelden</button></form><div id="loginMsg" class="message hidden"></div></div></div>
 <aside><h2>◈ Meine Finanzen</h2><button id="mobileMenuToggle" type="button" aria-expanded="false" aria-controls="menu">☰ Menü <span aria-hidden="true">▾</span></button><div id="menu"><button data-tab="dashboard" class="active">◫ Übersicht</button><button data-tab="transactions">⇄ Buchungen</button><button data-tab="analysis">⌕ Auswertung & Filter</button><button data-tab="recurring">↻ Fixkosten & Gehalt</button><button data-tab="accounts">▣ Konten & Sparbücher</button><button data-tab="bills">▤ Rechnungen</button><button data-tab="notes">✎ Notizen</button><button data-tab="settings">⚙ Einstellungen</button></div></aside>
