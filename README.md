@@ -1,18 +1,11 @@
-# Meine Finanzen – Version 3.0
+# Meine Finanzen – Design 2 / Passwortschutz
 
-Private Finanz-App für GitHub Pages mit Vollbild-Design, Rechnungsregister, Notizen, Sparbüchern und eigenem iPhone-App-Icon.
+## GitHub Pages
+ZIP entpacken und **alle Dateien** im Repository hochladen (index.html, Bilder, Manifest). Bestehende Dateien überschreiben, GitHub Pages auf main / (root).
 
-## Installation
-ZIP entpacken und **alle Dateien aus dem Ordner** ins Root-Verzeichnis des GitHub-Repositories hochladen. Bei GitHub Pages `main` und `/ (root)` einstellen. Zum Aktualisieren vorhandene Dateien ersetzen. iPhone: in Safari öffnen → Teilen → Zum Home-Bildschirm.
+## Sicherheit
+Beim ersten Öffnen auf HTTPS (GitHub Pages) ein Passwort mit mindestens 10 Zeichen anlegen. Bestehende Daten im selben Browser werden einmalig in einen AES-256-GCM-verschlüsselten lokalen Tresor übernommen (Schlüsselableitung PBKDF2-SHA256, 250.000 Iterationen). Passwort wird nicht gespeichert. Über 'App sperren' wieder zur Passwortabfrage. Kein Server, keine Synchronisierung, kein Passwort-Reset. Passwortverlust bedeutet Datenverlust, sofern kein Backup vorhanden ist.
 
-## Daten
-Die App speichert lokal im Browser (localStorage, Schlüssel `finanz-app-v1`) und behält deshalb die bisherigen Daten bei derselben URL und demselben Browser. Vor dem Update JSON-Backup herunterladen. Keine Synchronisierung, kein Login, kein tatsächlicher Bankzugriff.
+**Wichtig:** GitHub Pages veröffentlicht den Quellcode öffentlich. Die Daten werden verschlüsselt ausschließlich im Browser des jeweiligen Geräts gespeichert. Ein lokaler Passwortschutz ist kein serverseitiger Benutzerlogin und schützt nicht gegen kompromittierte Geräte oder schädliche Browser-Erweiterungen.
 
-## Sparbuch
-Daueraufträge werden rechnerisch ab Startmonat bis Endmonat (inklusive) angesetzt. Keine echten Überweisungen; Buchungen auf dem Girokonto werden nicht automatisch mit dem Sparbuch abgeglichen. Manuelle Einzahlungen zusätzlich eintragen, ohne Daueraufträge doppelt zu erfassen. Keine Zinsberechnung.
-
-## Rechnungen
-Offen/bezahlt als Register; ohne automatische Verknüpfung mit Buchungen.
-
-## Datenschutz
-GitHub-Pages-Seite ist öffentlich; Finanzdaten verbleiben lokal auf dem jeweiligen Gerät. JSON-Backups sind unverschlüsselt.
+Backups als JSON werden unverschlüsselt heruntergeladen. Sichere sie vertraulich. Vor dem Update Backup anfertigen. Nach einem Browserwechsel ist das lokale Tresor-Archiv nicht automatisch verfügbar; Daten über Backup importieren. 
