@@ -35,3 +35,10 @@ Kategorie-Einträge werden bei einer bereits vorhandenen Kategorie wiederverwend
 
 
 Update 26.10.2026: Fixkosten bearbeiten, pausieren, löschen; Buchungsdialog mit tatsächlichem Datum, Betrag und Konto. Bestätigte regelmäßige Buchungen erhalten eine eindeutige Referenz, sodass sie auch nach Änderung des tatsächlichen Betrags nicht erneut als offen angezeigt werden. Bestehende Daten bleiben erhalten. Gehalts-Stichtag ist Auswertungsgrenze; ein Monatsende wird kalendarisch gekappt (30. Februar => letzter Februartag).
+
+
+## Update: Übersicht und Auswertung
+Dashboard zeigt Girokonto, Sparbuch, Einnahmen und Ausgaben seit dem letzten tatsächlich erfassten Gehalt; bei fehlender Gehaltsbuchung Fallback auf den konfigurierten Stichtag. Zeitraumauswahl und Suchfilter befinden sich unter „Auswertung & Filter“. Gesamtvermögen am Ende des Dashboards. Prognose verwendet geplante Zahlungen bis zum nächsten Gehalts-Stichtag und ist kein Bankkontostand.
+
+## Face ID
+Apple Face ID kann gespeicherte E-Mail und Passwort automatisch ausfüllen. Nur wenn Safari einen eindeutig erkannten Autofill-Ereignistyp liefert, wird der Login automatisch ausgelöst; ansonsten bleibt der Button „Anmelden“ notwendig. Vollständig buttonfreie Anmeldung ist mit nativen Passkeys/WebAuthn und passender serverseitiger Einrichtung möglich, nicht allein durch CSS oder Supabase-Passwortauthentifizierung.
