@@ -42,3 +42,6 @@ Dashboard zeigt Girokonto, Sparbuch, Einnahmen und Ausgaben seit dem letzten tat
 
 ## Face ID
 Apple Face ID kann gespeicherte E-Mail und Passwort automatisch ausfüllen. Nur wenn Safari einen eindeutig erkannten Autofill-Ereignistyp liefert, wird der Login automatisch ausgelöst; ansonsten bleibt der Button „Anmelden“ notwendig. Vollständig buttonfreie Anmeldung ist mit nativen Passkeys/WebAuthn und passender serverseitiger Einrichtung möglich, nicht allein durch CSS oder Supabase-Passwortauthentifizierung.
+
+
+Datenschutz-Update: Supabase-Sitzung wird nicht dauerhaft gespeichert. Beim Wechsel in den Hintergrund wird die App gesperrt und die lokale Sitzung abgemeldet. Bei Rückkehr erneut anmelden. Face ID kann Zugangsdaten aus dem iPhone-Passwortmanager einsetzen, ist aber kein eigener Passkey-Login.

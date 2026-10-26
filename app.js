@@ -64,7 +64,7 @@ function txHtml(rows,allowDelete=true){return '<div class="scroll"><table><thead
 function filteredTx(){let rows=state.transactions.slice();if($('filterPeriod').value==='selected')rows=rows.filter(t=>t.booked_on>=state.period.from&&t.booked_on<=state.period.to);const search=$('filterSearch').value.trim().toLowerCase(),cat=$('filterCategory').value.trim().toLowerCase(),type=$('filterType').value,amount=$('filterAmount').value;rows=rows.filter(t=>(!search||[t.title,t.note,categoryName(t.category_id),accountName(t.account_id)].join(' ').toLowerCase().includes(search))&&(!cat||categoryName(t.category_id).toLowerCase().includes(cat))&&(type==='all'||t.transaction_type===type)&&(amount==='all'||(amount==='under100'?Math.abs(Number(t.amount))<100:Math.abs(Number(t.amount))>=100)));const sort=$('filterSort').value;rows.sort((a,b)=>sort==='az'?a.title.localeCompare(b.title):sort==='za'?b.title.localeCompare(a.title):sort==='low'?Math.abs(Number(a.amount))-Math.abs(Number(b.amount)):sort==='high'?Math.abs(Number(b.amount))-Math.abs(Number(a.amount)):b.booked_on.localeCompare(a.booked_on));return rows}
 function renderTx(){let rows=filteredTx();$('txCount').textContent=`${rows.length} Buchungen · Summe ${money(rows.reduce((s,t)=>s+Number(t.amount),0))}`;$('txTable').innerHTML=txHtml(rows)}
 async function load(){let {data:spaces,error}=await client.from('finance_spaces').select('*').order('created_at');if(error)throw error;state.spaces=spaces||[];state.space=state.spaces.find(s=>s.kind==='private'&&s.created_by===state.session.user.id)||state.spaces[0];if(!state.space)throw Error('Kein Finanzbereich vorhanden. Bitte Supabase SQL-Einrichtung überprüfen.');const names=['accounts','categories','transactions','recurring','bills','notes'];let values=await Promise.all(names.map(name=>query(name)));names.forEach((n,i)=>state[n]=values[i]);render()}
-async function init(){if(!window.supabase?.createClient){$('loginMsg').textContent='Supabase-Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen.';$('loginMsg').classList.remove('hidden');return}client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);let {data:{session},error}=await client.auth.getSession();if(error)console.warn(error);if(session)await enter(session);client.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){state.session=null;$('auth').classList.remove('hidden')}})}
+async function init(){if(!window.supabase?.createClient){$('loginMsg').textContent='Supabase-Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen.';$('loginMsg').classList.remove('hidden');return}client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:false}});let {data:{session},error}=await client.auth.getSession();if(error)console.warn(error);if(session)await enter(session);client.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){state.session=null;$('auth').classList.remove('hidden')}})}
 async function enter(session){state.session=session;$('auth').classList.add('hidden');$('userLabel').textContent=session.user.email||'Privater Benutzer';await load()}
 $('loginForm').onsubmit=async e=>{e.preventDefault();let btn=e.target.querySelector('button');btn.disabled=true;$('loginMsg').classList.add('hidden');try{if(!client)throw Error('Supabase nicht verfügbar');let {data,error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;await enter(data.session);$('password').value=''}catch(err){$('loginMsg').textContent='Anmeldung fehlgeschlagen: '+err.message;$('loginMsg').classList.remove('hidden')}finally{btn.disabled=false}};
 // iOS Password AutoFill can emit an input/change event after Face ID.
@@ -78,7 +78,22 @@ function tryAutofillLogin(event){
 }
 $('email').addEventListener('input',tryAutofillLogin);
 $('password').addEventListener('input',tryAutofillLogin);
-$('logoutBtn').onclick=()=>run(async()=>{await client.auth.signOut();location.reload()});$('refreshBtn').onclick=()=>run(async()=>{await load();message('Daten aktualisiert.',true)});
+// Datenschutz: sofortige Sperre beim Wechsel in den Hintergrund.
+// Sitzungen werden absichtlich nicht im Browser gespeichert.
+let backgroundLock=false;
+function lockFinanceView(){
+ if(!state.session)return;
+ backgroundLock=true;
+ $('auth').classList.remove('hidden');
+ $('password').value='';
+ state.session=null;
+ state.accounts=[];state.transactions=[];state.recurring=[];
+ state.bills=[];state.notes=[];state.spaces=[];state.space=null;
+ if(client)client.auth.signOut({scope:'local'}).catch(err=>console.warn('Abmeldung:',err));
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')lockFinanceView()});
+window.addEventListener('pagehide',lockFinanceView);
+$('logoutBtn').onclick=()=>run(async()=>{lockFinanceView();location.reload()});$('refreshBtn').onclick=()=>run(async()=>{await load();message('Daten aktualisiert.',true)});
 document.querySelectorAll('#menu button').forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;document.querySelectorAll('#menu button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.section').forEach(x=>x.classList.toggle('active',x.id===state.tab));$('pageTitle').textContent=b.textContent.replace(/^[^\p{L}]+/u,'').trim();window.scrollTo(0,0)});
 ['periodMode','periodMonth','salaryDay','periodFrom','periodTo'].forEach(id=>$(id).addEventListener('change',()=>{if(id==='periodFrom'||id==='periodTo')$('periodMode').value='custom';render()}));['filterSearch','filterCategory','filterType','filterAmount','filterSort','filterPeriod'].forEach(id=>$(id).addEventListener('input',renderTx));
 $('accountForm').onsubmit=e=>{e.preventDefault();run(async()=>{let x=getForm(e.target);x.opening_balance=Number(x.opening_balance);await insert('accounts',{...x,space_id:state.space.id});e.target.reset();e.target.elements.opening_date.value=today();await load();message('Konto angelegt.',true)})};
