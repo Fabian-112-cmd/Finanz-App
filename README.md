@@ -32,3 +32,6 @@ Supabase-Projekt-URL berichtigt auf `https://fvdjuavvandzshepwjkb.supabase.co`. 
 
 ## Update: Kategorien
 Kategorie-Einträge werden bei einer bereits vorhandenen Kategorie wiederverwendet (Fehler 23505). Kein SQL-Update notwendig. Bestehende Konten und Buchungen bleiben unverändert.
+
+
+Update 26.10.2026: Fixkosten bearbeiten, pausieren, löschen; Buchungsdialog mit tatsächlichem Datum, Betrag und Konto. Bestätigte regelmäßige Buchungen erhalten eine eindeutige Referenz, sodass sie auch nach Änderung des tatsächlichen Betrags nicht erneut als offen angezeigt werden. Bestehende Daten bleiben erhalten. Gehalts-Stichtag ist Auswertungsgrenze; ein Monatsende wird kalendarisch gekappt (30. Februar => letzter Februartag).
