@@ -19,9 +19,42 @@
   #dashboard>.panel:first-child .formgrid input[type="month"],
   #dashboard>.panel:first-child .formgrid input[type="date"]{font-size:12px}
 }
+
+/* Mobile-only layout: simple menu, no clipped native date fields, readable summary */
+#mobileMenuToggle{display:none}
+@media(max-width:620px){
+ html,body{max-width:100%;overflow-x:hidden}
+ aside{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:12px 14px;overflow:visible}
+ aside h2{font-size:18px;margin:0;flex:1;min-width:0}
+ #mobileMenuToggle{display:flex;align-items:center;justify-content:space-between;gap:15px;width:auto;min-width:130px;max-width:50%;background:#2c6758;border:1px solid #43806f;color:white;padding:10px 13px;border-radius:10px;white-space:nowrap}
+ #menu{display:none;flex:0 0 100%;width:100%;flex-direction:column;overflow:visible;gap:3px;padding-top:5px}
+ #menu.mobile-open{display:flex}
+ #menu button{display:block;width:100%;white-space:normal;text-align:left;padding:10px 13px}
+ main{padding:12px}
+ header{gap:8px;margin-bottom:12px}
+ header .actions{gap:6px;margin:3px 0 0}
+ header .actions button{padding:8px 10px;font-size:13px}
+ header #userLabel{font-size:12px;overflow-wrap:anywhere}
+ #dashboard>.panel:first-child{padding:13px;overflow:visible}
+ #dashboard>.panel:first-child .formgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+ #dashboard>.panel:first-child .formgrid>label{grid-column:auto;overflow:visible;min-width:0;max-width:100%;font-size:12px}
+ #dashboard>.panel:first-child .formgrid input,
+ #dashboard>.panel:first-child .formgrid select,
+ #dashboard>.panel:first-child .formgrid input[type="month"],
+ #dashboard>.panel:first-child .formgrid input[type="date"]{display:block;width:100%;min-width:0;max-width:100%;height:42px;padding:7px 10px;font-size:16px;line-height:normal;text-align:left;box-sizing:border-box;appearance:auto;-webkit-appearance:auto}
+ #dashboard #periodInfo{font-size:12px;line-height:1.35;margin:8px 0 0}
+ #dashboard .metrics{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+ #dashboard .metric{margin:0;padding:12px 14px;border-radius:13px;min-width:0}
+ #dashboard .metric b{font-size:23px;line-height:1.25;margin-top:2px}
+ #dashboard .metric span{font-size:13px}
+ #dashboard .grid{gap:9px}
+ #dashboard .panel{margin-bottom:10px}
+ #dashboard h3{font-size:17px}
+}
+@media(min-width:621px) and (max-width:980px){#mobileMenuToggle{display:none}}
 </style></head><body>
 <div id="auth"><div class="panel"><h2>🔐 Meine Finanzen</h2><p class="muted">Privater Zugang über Supabase. Auf dem iPhone kannst du deine Zugangsdaten mit Face ID ausfüllen lassen.</p><form id="loginForm"><label>E-Mail-Adresse<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button class="primary">Anmelden</button></form><div id="loginMsg" class="message hidden"></div><small>Benutzer werden in Supabase → Authentication verwaltet. Keine öffentliche Registrierung.</small></div></div>
-<aside><h2>◈ Meine Finanzen</h2><div id="menu"><button data-tab="dashboard" class="active">◫ Übersicht</button><button data-tab="transactions">⇄ Buchungen</button><button data-tab="recurring">↻ Fixkosten & Gehalt</button><button data-tab="accounts">▣ Konten & Sparbücher</button><button data-tab="bills">▤ Rechnungen</button><button data-tab="notes">✎ Notizen</button><button data-tab="settings">⚙ Einstellungen</button></div></aside>
+<aside><h2>◈ Meine Finanzen</h2><button id="mobileMenuToggle" type="button" aria-expanded="false" aria-controls="menu">☰ Menü <span aria-hidden="true">▾</span></button><div id="menu"><button data-tab="dashboard" class="active">◫ Übersicht</button><button data-tab="transactions">⇄ Buchungen</button><button data-tab="recurring">↻ Fixkosten & Gehalt</button><button data-tab="accounts">▣ Konten & Sparbücher</button><button data-tab="bills">▤ Rechnungen</button><button data-tab="notes">✎ Notizen</button><button data-tab="settings">⚙ Einstellungen</button></div></aside>
 <main><header><div><h1 id="pageTitle">Übersicht</h1><div class="muted" id="spaceLabel">Meine privaten Finanzen</div></div><div class="actions"><span id="userLabel" class="muted"></span><button id="refreshBtn">↻ Aktualisieren</button><button id="logoutBtn">Abmelden</button></div></header><div id="globalMsg" class="message hidden"></div>
 <section id="dashboard" class="section active"><div class="panel"><div class="formgrid"><label>Zeitraum<select id="periodMode"><option value="salary">Gehalt bis Gehalt</option><option value="calendar">Kalendermonat</option><option value="custom">Eigener Zeitraum</option></select></label><label>Monat<input type="month" id="periodMonth"></label><label>Gehalts-Stichtag (1–31)<input type="number" id="salaryDay" min="1" max="31" value="30"></label><label>Von<input type="date" id="periodFrom"></label><label>Bis<input type="date" id="periodTo"></label></div><p class="muted" id="periodInfo"></p></div><div class="metrics"><div class="metric"><span>Kontostand aller Konten</span><b id="mBalance">–</b></div><div class="metric"><span>Einnahmen im Zeitraum</span><b id="mIncome">–</b></div><div class="metric"><span>Ausgaben im Zeitraum</span><b id="mExpense">–</b></div><div class="metric"><span>Verbleibend nach geplanten Zahlungen*</span><b id="mForecast">–</b></div></div><div class="grid"><div class="panel"><h3>Kontostände</h3><div id="accountSummary"></div></div><div class="panel"><h3>Fällige / erwartete Zahlungen</h3><div id="dueSummary"></div></div></div><div class="panel"><h3>Buchungen im ausgewählten Zeitraum</h3><div id="dashboardTransactions"></div></div><small>*Prognose nur aus geplanten, noch nicht bestätigten Zahlungen. Tatsächliche Zahlung erst nach Buchung.</small></section>
 <section id="transactions" class="section"><div class="panel"><h3>Buchung erfassen</h3><form id="txForm"><div class="formgrid"><label>Datum<input type="date" name="booked_on" required></label><label>Konto<select name="account_id" data-accounts required></select></label><label>Art<select name="transaction_type"><option value="expense">Ausgabe</option><option value="income">Einnahme</option></select></label><label>Bezeichnung<input name="title" required placeholder="z. B. Tanken"></label><label>Kategorie<input name="category" placeholder="Tanken, Einkauf ..."></label><label>Betrag (€)<input name="amount" type="number" min="0.01" step="0.01" required></label><label>Notiz<input name="note"></label></div><div class="actions"><button class="primary">Buchung speichern</button></div></form><h3>Zwischen Konten umbuchen</h3><form id="transferForm" class="formgrid"><label>Datum<input type="date" name="date" required></label><label>Von<select name="from" data-accounts required></select></label><label>Nach<select name="to" data-accounts required></select></label><label>Betrag (€)<input type="number" name="amount" min="0.01" step="0.01" required></label><label>Bezeichnung<input name="title" value="Umbuchung" required></label><div class="actions"><button>Umbuchen</button></div></form></div><div class="panel"><h3>Alle Buchungen · Suche & Filter</h3><div class="formgrid"><label>Suche<input id="filterSearch" placeholder="z. B. Tanken"></label><label>Art<select id="filterType"><option value="all">Alle</option><option value="income">Einnahmen</option><option value="expense">Ausgaben</option><option value="transfer">Umbuchungen</option></select></label><label>Kategorie<input id="filterCategory" placeholder="Alle Kategorien"></label><label>Betrag<select id="filterAmount"><option value="all">Alle Beträge</option><option value="under100">Unter 100 €</option><option value="over100">Ab 100 €</option></select></label><label>Sortierung<select id="filterSort"><option value="date">Datum neueste zuerst</option><option value="az">Bezeichnung A–Z</option><option value="za">Bezeichnung Z–A</option><option value="low">Betrag aufsteigend</option><option value="high">Betrag absteigend</option></select></label><label>Zeitraum<select id="filterPeriod"><option value="selected">Ausgewählter Zeitraum</option><option value="all">Alle Buchungen</option></select></label></div><div class="actions"><button id="printBtn">🖨 PDF / Drucken</button><button id="csvBtn">CSV exportieren</button><button id="importBtn">CSV importieren</button><input type="file" id="csvFile" accept=".csv,text/csv" class="hidden"></div><p class="muted" id="txCount"></p><div id="txTable"></div></div></section>
@@ -31,4 +64,12 @@
 <section id="notes" class="section"><div class="panel"><h3>Private Notiz</h3><form id="noteForm"><label>Titel<input name="title" required></label><label>Text<textarea name="body"></textarea></label><div class="actions"><button class="primary">Notiz speichern</button></div></form></div><div class="panel"><h3>Meine Notizen</h3><div id="notesList"></div></div></section>
 <section id="settings" class="section"><div class="panel"><h3>Privater Bereich & Benutzer</h3><p>Du arbeitest aktuell in deinem privaten Finanzbereich. Deine Freundin erhält keinen Zugriff, solange du sie nicht ausdrücklich zu einem späteren gemeinsamen Bereich einlädst.</p><div id="spaceList"></div><p class="muted">Die Datenbank ist auf getrennte private und gemeinsame Bereiche vorbereitet. Einladungen und Rollenverwaltung werden erst in einer späteren Erweiterung freigeschaltet.</p></div><div class="panel"><h3>Datensicherung</h3><p>Exportiere deine Finanzdaten regelmäßig. Die JSON-Datei ist <b>nicht verschlüsselt</b> – vertraulich aufbewahren.</p><div class="actions"><button id="backupBtn">JSON-Backup herunterladen</button><button id="printOverview">Übersicht drucken / PDF</button></div></div></section>
 <footer>Meine Finanzen · Privates Supabase-Projekt · Design 2 – Modern Nature</footer></main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script src="app.js"></script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script src="app.js"></script><script>
+(function(){
+ const toggle=document.getElementById('mobileMenuToggle');
+ const menu=document.getElementById('menu');
+ if(!toggle||!menu)return;
+ toggle.addEventListener('click',()=>{const open=menu.classList.toggle('mobile-open');toggle.setAttribute('aria-expanded',String(open));toggle.innerHTML=open?'☰ Menü <span aria-hidden="true">▴</span>':'☰ Menü <span aria-hidden="true">▾</span>';});
+ menu.addEventListener('click',e=>{if(e.target.closest('button[data-tab]')){menu.classList.remove('mobile-open');toggle.setAttribute('aria-expanded','false');toggle.innerHTML='☰ Menü <span aria-hidden="true">▾</span>';}});
+})();
+</script></body></html>
