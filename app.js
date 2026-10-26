@@ -1,5 +1,5 @@
 'use strict';
-const SUPABASE_URL='https://fvdjuawandzshepwjkb.supabase.co';
+const SUPABASE_URL='https://fvdjuavvandzshepwjkb.supabase.co';
 const SUPABASE_KEY='sb_publishable_8VG6wR9BkVhmLfZGnD-d1g_Fw6rK_sk';
 const $=id=>document.getElementById(id), money=n=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(Number(n)||0), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};

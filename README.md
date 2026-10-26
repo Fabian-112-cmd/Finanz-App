@@ -26,3 +26,6 @@
 
 ## Wichtig
 Die neue App nutzt Supabase anstelle des früheren lokalen Browser-Speichers. Da noch keine echten Daten in der bisherigen App eingetragen wurden, ist keine Datenmigration notwendig.
+
+## Korrektur Projektadresse
+Supabase-Projekt-URL berichtigt auf `https://fvdjuavvandzshepwjkb.supabase.co`. Das API-Suffix `/rest/v1/` gehört nicht zur Client-Basisadresse.
