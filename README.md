@@ -29,3 +29,6 @@ Die neue App nutzt Supabase anstelle des früheren lokalen Browser-Speichers. Da
 
 ## Korrektur Projektadresse
 Supabase-Projekt-URL berichtigt auf `https://fvdjuavvandzshepwjkb.supabase.co`. Das API-Suffix `/rest/v1/` gehört nicht zur Client-Basisadresse.
+
+## Update: Kategorien
+Kategorie-Einträge werden bei einer bereits vorhandenen Kategorie wiederverwendet (Fehler 23505). Kein SQL-Update notwendig. Bestehende Konten und Buchungen bleiben unverändert.
