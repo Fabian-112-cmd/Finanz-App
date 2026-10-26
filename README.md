@@ -1,8 +1,5 @@
-Meine Finanzen – Erweiterung Oktober 2026
+Meine Finanzen – Modern Nature 3
 
-Neue Bereiche: Finanzkalender, Statistiken, Budgetplanung und Sparziele.
-Alle bisherigen Dateien ersetzen, inklusive app.js.
-Budgets und Sparziele werden als speziell gekennzeichnete Datensätze in finance_notes des bestehenden privaten Finanzbereichs gespeichert; kein SQL notwendig.
-Sparziele sind Planungswerte und verändern keine Kontostände.
-Die Finanz-App und ihre Supabase-Daten werden durch das Hochladen nicht gelöscht.
-Die bestehende Anmeldung und das responsive Design bleiben erhalten.
+Optische Neugestaltung für iPhone und PC mit mobiler Navigation. Bestehende Supabase-Logik unverändert.
+
+Alle Dateien (einschließlich app.js) ins Hauptverzeichnis von GitHub Pages hochladen.

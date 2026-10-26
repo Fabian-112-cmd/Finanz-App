@@ -127,6 +127,66 @@
 
 <style>
 .finance-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin:16px 0}.finance-day{min-width:0;min-height:78px;border:1px solid #dbe8df;border-radius:11px;padding:7px 4px;background:#f9fcf9;text-align:left;font-size:12px;overflow:hidden}.finance-day.today{border:2px solid #137b63}.finance-day.has-events{background:#edf7ef}.finance-day b{display:block}.finance-day small{display:block;font-size:10px;line-height:1.3}.finance-day-head{text-align:center;font-size:12px;color:#688076}.finance-day.empty{border:0;background:transparent}.stat-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}.finance-progress{height:12px;border-radius:99px;background:#e3eee8;overflow:hidden;margin:7px 0}.finance-progress>i{display:block;height:100%;background:#187d63;border-radius:99px}.finance-progress>i.over{background:#c2544d}.finance-item{padding:12px 0;border-bottom:1px solid #e4eee8}.finance-item:last-child{border-bottom:0}.finance-item-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.finance-item .actions{margin:7px 0 0}.finance-chart-row{display:grid;grid-template-columns:85px 1fr;gap:8px;align-items:center;margin:12px 0}.finance-chart-bars{display:grid;gap:4px}.finance-chart-bars div{height:12px;background:#178364;border-radius:4px;min-width:1px}.finance-chart-bars div.out{background:#c77d60}@media(max-width:620px){.finance-day{min-height:61px;font-size:11px;padding:5px 3px}.finance-day small{font-size:9px}.stat-summary .metric b{font-size:20px}.finance-chart-row{grid-template-columns:60px 1fr}}
+</style><style>
+/* Modern Nature 3: visually refreshed dashboard without changing the data model */
+:root{--forest:#123e36;--mint:#edf6f0;--edge:#e1ebe5;--ink:#183a32}
+body{background:linear-gradient(135deg,#f5f8f4,#eeefe6);color:var(--ink)}
+aside{background:linear-gradient(175deg,#133f36,#0b2d2b);box-shadow:6px 0 24px #102d2412}
+aside h2{font-weight:800;letter-spacing:-.6px}
+aside button{transition:background .16s; font-weight:600}
+aside button.active{background:#32715e}
+main{max-width:1600px;padding-top:30px}
+header{padding-bottom:10px}
+h1{font-weight:800;letter-spacing:-.9px}
+.panel,.metric{background:#fff;border:1px solid var(--edge);border-radius:19px;box-shadow:0 6px 20px #183e2f0b}
+.panel{padding:23px}.metric{padding:22px;position:relative;overflow:hidden}
+.metric b{font-size:clamp(22px,2.2vw,32px);letter-spacing:-.6px;color:#173e32}
+.metric span{font-size:13px;font-weight:650}
+#dashboard .metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:18px}
+#dashboard .metrics>.metric:nth-child(1){grid-column:1/-1;background:linear-gradient(115deg,#fff,#eaf6ee)}
+#dashboard .metrics>.metric:nth-child(1):before{content:'▣';float:right;font-size:28px;color:#168264}
+#dashboard .metrics>.metric:nth-child(2):before{content:'◉';float:right;font-size:24px;color:#d69b25}
+#dashboard .metrics>.metric:nth-child(3) b{color:#148364}
+#dashboard .metrics>.metric:nth-child(4) b{color:#c4584d}
+#dashboard .metrics>.metric:last-child{grid-column:1/-1;background:#f0f5f3;border-color:#d8e6de}
+#dashboard>.grid{gap:18px;margin-bottom:18px}
+#dashboard>.grid>.panel{margin:0}
+#dashboard h3,.section h3{font-size:19px;letter-spacing:-.3px}
+button.primary{background:#167f61}
+button:hover{filter:brightness(.98)}
+.finance-day{min-height:92px;border-radius:12px;transition:background .15s}
+.finance-day:hover{background:#e3f2e8}
+.finance-day-head{font-weight:700}
+.finance-progress{height:14px}
+.finance-chart-bars div{border-radius:8px}
+#statsCategories,#statsTrend,#budgetList,#goalList{margin-top:18px}
+#statistics .panel,#budget .panel,#goals .panel{max-width:1100px}
+#mobileBottomNav{display:none}
+@media(max-width:620px){
+ body{background:#f3f5f1}
+ main{padding:16px 13px 98px}
+ header{gap:7px;margin-bottom:14px}
+ header .actions{gap:5px}
+ header .actions button{padding:7px 10px;font-size:12px}
+ h1{font-size:24px}
+ .panel,.metric{border-radius:17px;box-shadow:0 3px 13px #173a2c0b}
+ .panel{padding:16px}
+ #dashboard .metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
+ #dashboard .metrics>.metric{margin:0;padding:16px}
+ #dashboard .metrics>.metric:nth-child(1),#dashboard .metrics>.metric:last-child{grid-column:1/-1}
+ #dashboard .metrics>.metric b{font-size:22px}
+ #dashboard .metrics>.metric:nth-child(3) span,#dashboard .metrics>.metric:nth-child(4) span{font-size:12px}
+ #dashboard>.grid{gap:12px;margin-bottom:14px}
+ .finance-day{min-height:57px;padding:4px 2px}
+ .finance-calendar{gap:3px}
+ #mobileBottomNav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;bottom:0;left:0;right:0;padding:7px 3px calc(8px + env(safe-area-inset-bottom));background:#fffffffa;border-top:1px solid #dce7e0;box-shadow:0 -5px 22px #1d40321a;z-index:8}
+ #mobileBottomNav button{background:none;border:0;border-radius:10px;padding:5px 1px;color:#657970;font-size:10px;display:grid;gap:2px;justify-items:center}
+ #mobileBottomNav button .nav-icon{font-size:21px;line-height:1.2}
+ #mobileBottomNav button.active{color:#117d61;background:#e9f5ee}
+ aside{padding-bottom:10px}
+ #calendar label{max-width:100%}
+ #calendar input[type=month]{min-width:0}
+}
 </style></head><body>
 <div id="auth"><div class="panel"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail-Adresse<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button class="primary">Anmelden</button></form><div id="loginMsg" class="message hidden"></div></div></div>
 <aside><h2>◈ Meine Finanzen</h2><button id="mobileMenuToggle" type="button" aria-expanded="false" aria-controls="menu">☰ Menü <span aria-hidden="true">▾</span></button><div id="menu"><button data-tab="dashboard" class="active">◫ Übersicht</button><button data-tab="transactions">⇄ Buchungen</button><button data-tab="analysis">⌕ Auswertung & Filter</button><button data-tab="calendar">▦ Finanzkalender</button><button data-tab="statistics">▥ Statistiken</button><button data-tab="budget">◉ Budgetplanung</button><button data-tab="goals">◇ Sparziele</button><button data-tab="recurring">↻ Fixkosten & Gehalt</button><button data-tab="accounts">▣ Konten & Sparbücher</button><button data-tab="bills">▤ Rechnungen</button><button data-tab="notes">✎ Notizen</button><button data-tab="settings">⚙ Einstellungen</button></div></aside>
@@ -144,12 +204,19 @@
 <section id="notes" class="section"><div class="panel"><h3>Private Notiz</h3><form id="noteForm"><label>Titel<input name="title" required></label><label>Text<textarea name="body"></textarea></label><div class="actions"><button class="primary">Notiz speichern</button></div></form></div><div class="panel"><h3>Meine Notizen</h3><div id="notesList"></div></div></section>
 <section id="settings" class="section"><div class="panel"><h3>Privater Bereich & Benutzer</h3><p>Du arbeitest aktuell in deinem privaten Finanzbereich. Deine Freundin erhält keinen Zugriff, solange du sie nicht ausdrücklich zu einem späteren gemeinsamen Bereich einlädst.</p><div id="spaceList"></div><p class="muted">Die Datenbank ist auf getrennte private und gemeinsame Bereiche vorbereitet. Einladungen und Rollenverwaltung werden erst in einer späteren Erweiterung freigeschaltet.</p></div><div class="panel"><h3>Datensicherung</h3><p>Exportiere deine Finanzdaten regelmäßig. Die JSON-Datei ist <b>nicht verschlüsselt</b> – vertraulich aufbewahren.</p><div class="actions"><button id="backupBtn">JSON-Backup herunterladen</button><button id="printOverview">Übersicht drucken / PDF</button></div></div></section>
 <footer>Meine Finanzen · Privates Supabase-Projekt · Design 2 – Modern Nature</footer></main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script src="app.js"></script><script>
+<nav id="mobileBottomNav" aria-label="Schnellnavigation"><button type="button" data-quick-tab="dashboard"><span class="nav-icon">⌂</span>Übersicht</button><button type="button" data-quick-tab="transactions"><span class="nav-icon">⇄</span>Buchungen</button><button type="button" data-quick-tab="accounts"><span class="nav-icon">▣</span>Konten</button><button type="button" data-quick-tab="statistics"><span class="nav-icon">▥</span>Analyse</button><button type="button" id="quickMore"><span class="nav-icon">☰</span>Mehr</button></nav><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script src="app.js"></script><script>
 (function(){
  const toggle=document.getElementById('mobileMenuToggle');
  const menu=document.getElementById('menu');
  if(!toggle||!menu)return;
  toggle.addEventListener('click',()=>{const open=menu.classList.toggle('mobile-open');toggle.setAttribute('aria-expanded',String(open));toggle.innerHTML=open?'☰ Menü <span aria-hidden="true">▴</span>':'☰ Menü <span aria-hidden="true">▾</span>';});
  menu.addEventListener('click',e=>{if(e.target.closest('button[data-tab]')){menu.classList.remove('mobile-open');toggle.setAttribute('aria-expanded','false');toggle.innerHTML='☰ Menü <span aria-hidden="true">▾</span>';}});
+})();
+</script><script>
+(function(){
+ const nav=document.getElementById('mobileBottomNav'), menu=document.getElementById('menu'), toggle=document.getElementById('mobileMenuToggle');
+ function sync(){const active=document.querySelector('#menu button.active');nav.querySelectorAll('[data-quick-tab]').forEach(b=>b.classList.toggle('active',active&&active.dataset.tab===b.dataset.quickTab));}
+ nav.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='quickMore'){window.scrollTo({top:0,behavior:'smooth'});toggle.click();return;}const target=menu.querySelector('[data-tab="'+b.dataset.quickTab+'"]');if(target){target.click();sync();window.scrollTo({top:0,behavior:'smooth'});}});
+ menu.addEventListener('click',()=>setTimeout(sync,0));sync();
 })();
 </script></body></html>
