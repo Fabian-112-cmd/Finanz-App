@@ -291,7 +291,24 @@ h1{font-size:29px}
  main{padding-bottom:calc(140px + env(safe-area-inset-bottom))!important}
  #mobileBottomNav{padding-bottom:calc(10px + env(safe-area-inset-bottom))!important}
 }
-</style></head><body>
+</style><style id="compact-mobile-v6">
+/* Compact iPhone cards, without changing the PC grid */
+@media (max-width:700px){
+ #dashboard>.metrics{gap:9px!important;margin-bottom:12px!important}
+ #dashboard>.metrics>.metric,#dashboard>.metrics>.metric:nth-child(1),#dashboard>.metrics>.metric:nth-child(2),#dashboard>.metrics>.metric:nth-child(3),#dashboard>.metrics>.metric:nth-child(4),#dashboard>.metrics>.metric:nth-child(5){min-height:78px!important;padding:13px 16px!important;border-radius:15px!important}
+ #dashboard>.metrics>.metric span{font-size:13px!important;line-height:1.35!important;padding-right:28px}
+ #dashboard>.metrics>.metric b{font-size:23px!important;line-height:1.25!important;display:block;margin-top:5px!important}
+ #dashboard>.metrics>.metric:nth-child(1):before,#dashboard>.metrics>.metric:nth-child(2):before{font-size:19px!important}
+ #dashboard>.grid{gap:11px!important;margin-bottom:12px!important}
+ #dashboard>.grid>.panel{padding:14px 16px!important}
+ #dashboard>.panel{margin-bottom:12px!important}
+ #mobileBottomNav{padding:5px 5px calc(5px + env(safe-area-inset-bottom))!important;box-shadow:0 -2px 10px #1d403214!important;background:#ffffffef!important;backdrop-filter:blur(12px);gap:2px}
+ #mobileBottomNav button{padding:4px 1px!important;font-size:10px!important;border-radius:10px!important;gap:1px!important}
+ #mobileBottomNav button .nav-icon{font-size:19px!important;line-height:1.05!important}
+ main{padding-bottom:calc(95px + env(safe-area-inset-bottom))!important}
+}
+</style>
+</head><body>
 <div id="auth"><div class="panel"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail-Adresse<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button class="primary">Anmelden</button></form><div id="loginMsg" class="message hidden"></div></div></div>
 <aside><h2>◈ Meine Finanzen</h2><button id="mobileMenuToggle" type="button" aria-expanded="false" aria-controls="menu">☰ Menü <span aria-hidden="true">▾</span></button><div id="menu"><button data-tab="dashboard" class="active">◫ Übersicht</button><button data-tab="transactions">⇄ Buchungen</button><button data-tab="analysis">⌕ Auswertung & Filter</button><button data-tab="calendar">▦ Finanzkalender</button><button data-tab="statistics">▥ Statistiken</button><button data-tab="budget">◉ Budgetplanung</button><button data-tab="goals">◇ Sparziele</button><button data-tab="recurring">↻ Fixkosten & Gehalt</button><button data-tab="accounts">▣ Konten & Sparbücher</button><button data-tab="bills">▤ Rechnungen</button><button data-tab="notes">✎ Notizen</button><button data-tab="settings">⚙ Einstellungen</button></div></aside>
 <main><header><div><h1 id="pageTitle">Übersicht</h1><div class="muted" id="spaceLabel">Meine privaten Finanzen</div></div><div class="actions"><span id="userLabel" class="muted"></span><button id="refreshBtn">↻ Aktualisieren</button><button id="logoutBtn">Abmelden</button></div></header><div id="globalMsg" class="message hidden"></div>

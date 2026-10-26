@@ -1,1 +1,5 @@
-Finanz-App Layout-Fix v5: Desktop gleichmäßiges 2-Spalten-Raster, iPhone alle fünf Kennzahlen untereinander, Kontostände und Zahlungen untereinander, Symbole verbessert, Abstand für feste iPhone-Navigation. Bestehende Supabase-Logik unverändert. Alle Dateien einschließlich app.js im GitHub-Hauptverzeichnis ersetzen.
+Meine Finanzen – kompakte iPhone-Ansicht v6
+
+Alle Dateien in das Stammverzeichnis des GitHub-Pages-Repositories hochladen. Die Desktop-Ansicht und die Supabase-Datenbank werden nicht verändert.
+
+Änderungen: niedrigere iPhone-Finanzkacheln, kleinere Abstände, dezentere untere Navigation und Platz für Inhalte unter der Navigation.
