@@ -187,15 +187,102 @@ button:hover{filter:brightness(.98)}
  #calendar label{max-width:100%}
  #calendar input[type=month]{min-width:0}
 }
-</style></head><body>
+</style>
+<style>
+/* Modern Nature 4 — consistent desktop and iPhone visual system */
+:root{--forest:#153e32;--forest2:#0d3029;--green:#15815f;--mint:#e9f6ee;--paper:#f6f4eb;--line:#e5e9e2;--red:#cf514b;--blue:#2879c5}
+body{background:linear-gradient(115deg,#f7f6f0,#f0f2e9);color:#203c32}
+aside{width:236px;background:linear-gradient(160deg,#1a4836,#0c3028);padding:24px 12px;box-shadow:3px 0 16px #12372912}
+aside h2{font-size:21px;line-height:1.25;padding:0 6px;margin:4px 4px 22px}
+aside button{padding:11px 13px;margin:3px 0;border-radius:11px;font-size:14px}
+aside button.active{background:#337c57}
+main{margin-left:236px;padding:26px 28px 40px;max-width:1680px}
+header{margin-bottom:18px}
+h1{font-size:29px}
+.panel,.metric{border-radius:16px;background:#fff;border:1px solid #e7ebe4;box-shadow:0 5px 17px #203a2710}
+.panel{padding:20px}
+.metric{padding:18px 20px}
+.metric span{display:block;font-size:13px;font-weight:650;color:#62776c}
+.metric b{font-size:clamp(22px,2vw,30px);line-height:1.4}
+#dashboard .metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:17px}
+#dashboard .metrics>.metric{grid-column:auto!important;margin:0;min-height:105px}
+#dashboard .metrics>.metric:nth-child(1){background:#fff}
+#dashboard .metrics>.metric:nth-child(2){background:#fff}
+#dashboard .metrics>.metric:nth-child(5){grid-column:1/-1!important;min-height:94px;background:#f0f7f0}
+#dashboard>.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0 0 16px}
+#dashboard>.grid>.panel{min-width:0;margin:0}
+#dashboard>.panel{margin-bottom:16px}
+#dashboard #dashboardTransactions{min-width:0}
+#dashboard #dashboardTransactions th,#dashboard #dashboardTransactions td{padding:10px 8px}
+#dashboard #dashboardTransactions td.num{white-space:nowrap}
+#totalAssetsPanel{margin-top:18px}
+#calendar .panel{max-width:none}
+.calendar-toolbar{display:flex;align-items:end;justify-content:center;gap:12px;margin:14px 0 20px}
+.calendar-toolbar label{width:220px;text-align:center}
+.calendar-toolbar button{height:43px;font-size:23px;padding:0 18px}
+.finance-calendar{gap:3px;background:#e7ece5;border:1px solid #e7ece5;border-radius:12px;overflow:hidden}
+.finance-day{min-height:102px;border:0;border-radius:0;background:white;padding:9px;text-align:left}
+.finance-day.empty{background:#f7f8f4}
+.finance-day-head{background:#f2f5f0;padding:9px 2px}
+.finance-day.today{outline:2px solid var(--green);outline-offset:-2px}
+.finance-day.has-events{background:#f0f8f1}
+.finance-day small{color:#486c58;margin-top:4px}
+#calendarDetails{border-top:1px solid var(--line);padding-top:15px}
+.stat-category-layout{display:grid;grid-template-columns:minmax(170px,260px) 1fr;gap:22px;align-items:center}
+.stat-donut{width:min(100%,230px);aspect-ratio:1;border-radius:50%;background:conic-gradient(#dfe8e2 0 100%);display:grid;place-items:center;margin:12px auto}
+.stat-donut-center{width:63%;aspect-ratio:1;background:white;border-radius:50%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:10px}
+.stat-donut-center small{font-size:11px}
+.stat-donut-center strong{font-size:clamp(14px,1.6vw,19px);white-space:nowrap}
+#statsCategories .finance-item{padding:8px 0}
+#statistics .panel,#budget .panel,#goals .panel{max-width:none}
+.finance-progress{height:10px}
+.finance-item{padding:14px 0}
+#budgetList,#goalList{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+#budgetList>.finance-item,#goalList>.finance-item{padding:16px;border:1px solid var(--line);border-radius:13px;background:#fff}
+#statistics .stat-summary .metric{margin:0}
+@media(max-width:980px){
+ aside{position:static;width:100%}
+ main{margin:0}
+}
+@media(max-width:620px){
+ html,body{max-width:100%;overflow-x:hidden}
+ aside{position:relative;padding:12px 14px}
+ aside h2{margin:0;font-size:19px}
+ main{padding:16px 12px calc(100px + env(safe-area-inset-bottom))}
+ header{margin-bottom:15px}
+ .panel{padding:15px;border-radius:15px}
+ #dashboard .metrics{grid-template-columns:minmax(0,1fr);gap:10px;margin-bottom:13px}
+ #dashboard .metrics>.metric{grid-column:1/-1!important;min-height:0;padding:15px 17px}
+ #dashboard .metrics>.metric b{font-size:24px}
+ #dashboard>.grid{grid-template-columns:minmax(0,1fr);gap:12px}
+ #dashboard>.grid>.panel{margin:0}
+ #dashboard>.panel{margin-bottom:13px}
+ #dashboard #dashboardTransactions .scroll{overflow-x:visible}
+ #dashboard #dashboardTransactions table,#dashboard #dashboardTransactions tbody,#dashboard #dashboardTransactions tr,#dashboard #dashboardTransactions td{display:block;width:100%}
+ #dashboard #dashboardTransactions thead{display:none}
+ #dashboard #dashboardTransactions tr{padding:10px 12px;border:1px solid #e4eae5;border-radius:12px;margin-bottom:9px}
+ #dashboard #dashboardTransactions td{padding:3px 0;border:0}
+ #dashboard #dashboardTransactions td.num{text-align:left;font-weight:800;font-size:16px}
+ .finance-calendar{gap:2px}
+ .finance-day{min-height:62px;padding:5px 3px;font-size:11px}
+ .finance-day small{font-size:9px;overflow-wrap:anywhere}
+ .calendar-toolbar label{width:190px}
+ .stat-category-layout{grid-template-columns:1fr}
+ .stat-donut{width:190px}
+ #budgetList,#goalList{grid-template-columns:1fr}
+ #mobileBottomNav{display:grid}
+}
+@media print{#mobileBottomNav{display:none!important}}
+</style>
+</head><body>
 <div id="auth"><div class="panel"><h2>Anmelden</h2><form id="loginForm"><label>E-Mail-Adresse<input id="email" type="email" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button class="primary">Anmelden</button></form><div id="loginMsg" class="message hidden"></div></div></div>
 <aside><h2>◈ Meine Finanzen</h2><button id="mobileMenuToggle" type="button" aria-expanded="false" aria-controls="menu">☰ Menü <span aria-hidden="true">▾</span></button><div id="menu"><button data-tab="dashboard" class="active">◫ Übersicht</button><button data-tab="transactions">⇄ Buchungen</button><button data-tab="analysis">⌕ Auswertung & Filter</button><button data-tab="calendar">▦ Finanzkalender</button><button data-tab="statistics">▥ Statistiken</button><button data-tab="budget">◉ Budgetplanung</button><button data-tab="goals">◇ Sparziele</button><button data-tab="recurring">↻ Fixkosten & Gehalt</button><button data-tab="accounts">▣ Konten & Sparbücher</button><button data-tab="bills">▤ Rechnungen</button><button data-tab="notes">✎ Notizen</button><button data-tab="settings">⚙ Einstellungen</button></div></aside>
 <main><header><div><h1 id="pageTitle">Übersicht</h1><div class="muted" id="spaceLabel">Meine privaten Finanzen</div></div><div class="actions"><span id="userLabel" class="muted"></span><button id="refreshBtn">↻ Aktualisieren</button><button id="logoutBtn">Abmelden</button></div></header><div id="globalMsg" class="message hidden"></div>
 <section id="dashboard" class="section active"><p class="muted" id="dashboardPeriodInfo" style="margin:0 0 10px">Automatisch: seit dem letzten Gehalt</p><div class="metrics"><div class="metric"><span>Girokonto · aktueller Stand</span><b id="mChecking">–</b></div><div class="metric"><span>Sparbuch · aktueller Stand</span><b id="mSavings">–</b></div><div class="metric"><span>Einnahmen seit letztem Gehalt</span><b id="mIncome">–</b></div><div class="metric"><span>Ausgaben seit letztem Gehalt</span><b id="mExpense">–</b></div><div class="metric"><span>Verbleibend nach geplanten Zahlungen*</span><b id="mForecast">–</b></div></div><div class="grid"><div class="panel"><h3>Kontostände</h3><div id="accountSummary"></div></div><div class="panel"><h3>Fällige / erwartete Zahlungen</h3><div id="dueSummary"></div></div></div><div class="panel"><h3>Buchungen seit dem letzten Gehalt</h3><div id="dashboardTransactions"></div></div><small>*Prognose nur aus geplanten, noch nicht bestätigten Zahlungen. Tatsächliche Zahlung erst nach Buchung.</small><div class="panel" id="totalAssetsPanel"><span class="muted">Gesamtvermögen · alle Konten</span><h3 id="mBalance" style="margin:4px 0 0">–</h3></div></section>
 
-<section id="calendar" class="section"><div class="panel"><h3>Finanzkalender</h3><p class="muted">Gebuchte Umsätze, geplante Zahlungen und Rechnungsfälligkeiten im Monatsüberblick.</p><label>Monat<input type="month" id="calendarMonth"></label><div id="calendarGrid" class="finance-calendar"></div><div id="calendarDetails"></div></div></section>
-<section id="statistics" class="section"><div class="panel"><h3>Einnahmen & Ausgaben</h3><label>Monat<input type="month" id="statsMonth"></label><div class="stat-summary"><div class="metric"><span>Einnahmen</span><b id="statsIncome">–</b></div><div class="metric"><span>Ausgaben</span><b id="statsExpense">–</b></div></div><h3>Ausgaben nach Kategorie</h3><div id="statsCategories"></div></div><div class="panel"><h3>Letzte sechs Monate</h3><div id="statsTrend"></div></div></section>
-<section id="budget" class="section"><div class="panel"><h3>Monatliches Budget planen</h3><p class="muted">Lege Ausgabenlimits je Kategorie fest. Die Werte werden in deinem privaten Finanzbereich gespeichert.</p><form id="budgetForm" class="formgrid"><label>Kategorie<input name="category" required placeholder="z. B. Tanken"></label><label>Limit pro Monat (€)<input name="limit" type="number" min="0.01" step="0.01" required></label><div class="actions"><button class="primary">Budget speichern</button></div></form></div><div class="panel"><h3>Deine Budgets</h3><label>Monat<input type="month" id="budgetMonth"></label><div id="budgetList"></div></div></section>
+<section id="calendar" class="section"><div class="panel"><h3>Finanzkalender</h3><p class="muted">Gebuchte Umsätze, geplante Zahlungen und Rechnungsfälligkeiten im Monatsüberblick.</p><div class="calendar-toolbar"><button type="button" id="calendarPrev" aria-label="Vorheriger Monat">‹</button><label>Monat<input type="month" id="calendarMonth"></label><button type="button" id="calendarNext" aria-label="Nächster Monat">›</button></div><div id="calendarGrid" class="finance-calendar"></div><div id="calendarDetails"></div></div></section>
+<section id="statistics" class="section"><div class="panel"><h3>Einnahmen & Ausgaben</h3><label>Monat<input type="month" id="statsMonth"></label><div class="stat-summary"><div class="metric"><span>Einnahmen</span><b id="statsIncome">–</b></div><div class="metric"><span>Ausgaben</span><b id="statsExpense">–</b></div></div><h3>Ausgaben nach Kategorie</h3><div class="stat-category-layout"><div id="statsDonut" class="stat-donut"><div class="stat-donut-center"><small>Ausgaben</small><strong id="statsDonutAmount">0,00 €</strong></div></div><div id="statsCategories"></div></div></div><div class="panel"><h3>Letzte sechs Monate</h3><div id="statsTrend"></div></div></section>
+<section id="budget" class="section"><div class="panel"><h3>Budgetplanung</h3><p class="muted">Lege Ausgabenlimits je Kategorie fest. Die Werte werden in deinem privaten Finanzbereich gespeichert.</p><form id="budgetForm" class="formgrid"><label>Kategorie<input name="category" required placeholder="z. B. Tanken"></label><label>Limit pro Monat (€)<input name="limit" type="number" min="0.01" step="0.01" required></label><div class="actions"><button class="primary">Budget speichern</button></div></form></div><div class="panel"><h3>Deine Budgets</h3><label>Monat<input type="month" id="budgetMonth"></label><div id="budgetList"></div></div></section>
 <section id="goals" class="section"><div class="panel"><h3>Neues Sparziel</h3><form id="goalForm" class="formgrid"><label>Bezeichnung<input name="title" placeholder="z. B. Urlaub" required></label><label>Zielbetrag (€)<input name="target" type="number" min="0.01" step="0.01" required></label><label>Bereits gespart (€)<input name="saved" type="number" min="0" step="0.01" value="0" required></label><div class="actions"><button class="primary">Sparziel anlegen</button></div></form><p class="muted">Sparziele sind eine separate Planung. Sie verändern keine echten Kontostände.</p></div><div class="panel"><h3>Meine Sparziele</h3><div id="goalList"></div></div></section>
 <section id="transactions" class="section"><div class="panel"><h3>Buchung erfassen</h3><form id="txForm"><div class="formgrid"><label>Datum<input type="date" name="booked_on" required></label><label>Konto<select name="account_id" data-accounts required></select></label><label>Art<select name="transaction_type"><option value="expense">Ausgabe</option><option value="income">Einnahme</option></select></label><label>Bezeichnung<input name="title" required placeholder="z. B. Tanken"></label><label>Kategorie<input name="category" placeholder="Tanken, Einkauf ..."></label><label>Betrag (€)<input name="amount" type="number" min="0.01" step="0.01" required></label><label>Notiz<input name="note"></label></div><div class="actions"><button class="primary">Buchung speichern</button></div></form><h3>Zwischen Konten umbuchen</h3><form id="transferForm" class="formgrid"><label>Datum<input type="date" name="date" required></label><label>Von<select name="from" data-accounts required></select></label><label>Nach<select name="to" data-accounts required></select></label><label>Betrag (€)<input type="number" name="amount" min="0.01" step="0.01" required></label><label>Bezeichnung<input name="title" value="Umbuchung" required></label><div class="actions"><button>Umbuchen</button></div></form></div></section>
 <section id="analysis" class="section"><div class="panel"><h3>Zeitraum auswählen</h3><div class="formgrid"><label>Zeitraum<select id="periodMode"><option value="salary">Gehalt bis Gehalt</option><option value="calendar">Kalendermonat</option><option value="custom">Eigener Zeitraum</option></select></label><label>Monat<input type="month" id="periodMonth"></label><label>Gehalts-Stichtag (1–31)<input type="number" id="salaryDay" min="1" max="31" value="30"></label><label>Von<input type="date" id="periodFrom"></label><label>Bis<input type="date" id="periodTo"></label></div><p class="muted" id="periodInfo"></p></div><div class="panel"><h3>Alle Buchungen · Suche & Filter</h3><div class="formgrid"><label>Suche<input id="filterSearch" placeholder="z. B. Tanken"></label><label>Art<select id="filterType"><option value="all">Alle</option><option value="income">Einnahmen</option><option value="expense">Ausgaben</option><option value="transfer">Umbuchungen</option></select></label><label>Kategorie<input id="filterCategory" placeholder="Alle Kategorien"></label><label>Betrag<select id="filterAmount"><option value="all">Alle Beträge</option><option value="under100">Unter 100 €</option><option value="over100">Ab 100 €</option></select></label><label>Sortierung<select id="filterSort"><option value="date">Datum neueste zuerst</option><option value="az">Bezeichnung A–Z</option><option value="za">Bezeichnung Z–A</option><option value="low">Betrag aufsteigend</option><option value="high">Betrag absteigend</option></select></label><label>Zeitraum<select id="filterPeriod"><option value="selected">Ausgewählter Zeitraum</option><option value="all">Alle Buchungen</option></select></label></div><div class="actions"><button id="printBtn">🖨 PDF / Drucken</button><button id="csvBtn">CSV exportieren</button><button id="importBtn">CSV importieren</button><input type="file" id="csvFile" accept=".csv,text/csv" class="hidden"></div><p class="muted" id="txCount"></p><div id="txTable"></div></div></section><section id="recurring" class="section"><div class="panel"><h3>Regelmäßige Einnahmen & Fixkosten</h3><p class="muted">Hier planst du Zahlungen. Der Kontostand ändert sich erst, wenn du den tatsächlichen Eingang oder Abgang als Buchung bestätigst.</p><form id="recForm"><div class="formgrid"><label>Bezeichnung<input name="title" placeholder="Gehalt, Miete ..." required></label><label>Art<select name="entry_type"><option value="expense">Fixe Ausgabe</option><option value="income">Fixe Einnahme / Gehalt</option></select></label><label>Betrag (€)<input type="number" name="amount" step="0.01" min="0.01" required></label><label>Rhythmus<select name="frequency"><option value="monthly">Monatlich</option><option value="quarterly">Vierteljährlich</option><option value="yearly">Jährlich</option></select></label><label>Üblicher Tag (1–31)<input type="number" name="due_day" min="1" max="31" value="30" required></label><label>Spätestens am Tag (optional)<input type="number" name="latest_due_day" min="1" max="31"></label><label>Beginn<input type="date" name="starts_on" required></label><label>Ende (optional)<input type="date" name="ends_on"></label><label>Konto<select name="account_id" data-accounts required></select></label></div><div class="actions"><button class="primary" id="recSaveBtn">Regelmäßige Zahlung speichern</button><button type="button" id="recCancelBtn" class="hidden">Bearbeitung abbrechen</button></div></form></div><div class="panel"><h3>Meine Daueraufträge / Fixkosten verwalten</h3><p class="muted">Bearbeiten oder löschen, ohne bereits gebuchte Zahlungen zu verändern.</p><div id="recManage"></div></div><div class="panel"><h3>Geplante Zahlungen im Zeitraum</h3><div id="recTable"></div></div></section>

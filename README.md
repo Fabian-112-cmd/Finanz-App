@@ -1,5 +1,1 @@
-Meine Finanzen – Modern Nature 3
-
-Optische Neugestaltung für iPhone und PC mit mobiler Navigation. Bestehende Supabase-Logik unverändert.
-
-Alle Dateien (einschließlich app.js) ins Hauptverzeichnis von GitHub Pages hochladen.
+Meine Finanzen – Modern Nature 4\n\nDateien im Stammverzeichnis des GitHub-Pages-Repositories hochladen. index.html und app.js gemeinsam ersetzen.\n\nNeu: gleichmäßiges Desktop-Dashboard, mobile Einzelkacheln, Monatsnavigation im Kalender, Donutdiagramm für Ausgaben, Budget- und Sparzielkarten.\n\nSupabase-Tabellen und Anmeldelogik bleiben unverändert. Kein SQL notwendig.\n
