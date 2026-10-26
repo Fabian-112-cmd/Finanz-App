@@ -35,10 +35,3 @@ Kategorie-Einträge werden bei einer bereits vorhandenen Kategorie wiederverwend
 
 
 Update 26.10.2026: Fixkosten bearbeiten, pausieren, löschen; Buchungsdialog mit tatsächlichem Datum, Betrag und Konto. Bestätigte regelmäßige Buchungen erhalten eine eindeutige Referenz, sodass sie auch nach Änderung des tatsächlichen Betrags nicht erneut als offen angezeigt werden. Bestehende Daten bleiben erhalten. Gehalts-Stichtag ist Auswertungsgrenze; ein Monatsende wird kalendarisch gekappt (30. Februar => letzter Februartag).
-
-## Update: iPhone + Sparraten + Privatsphäre
-1. Die Dateien dieses ZIPs im bestehenden GitHub-Repository ersetzen (index.html und app.js gemeinsam).
-2. `SUPABASE_SPARRATEN.sql` einmal im Supabase SQL Editor ausführen. Die bisherigen Tabellen/Daten werden nicht gelöscht.
-3. Danach Seite neu laden und unter „Sparraten“ einen Plan anlegen.
-4. Automatische Sparraten werden beim nächsten Öffnen/Aktualisieren verarbeitet; es werden keine Banküberweisungen ausgelöst. Jede Monatsrate wird dank Datenbank-Sperre nur einmal verbucht.
-5. Anmeldesitzungen werden nicht gespeichert. Beim Verlassen/Wechsel in den Hintergrund wird die Ansicht gesperrt. iOS kann Hintergrund-Ereignisse unter Umständen verzögert melden; keine absolute Sicherheitsgarantie bei kompromittierten Geräten.
