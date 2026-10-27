@@ -65,14 +65,20 @@ function filteredTx(){let rows=state.transactions.slice();if($('filterPeriod').v
 function renderTx(){let rows=filteredTx();$('txCount').textContent=`${rows.length} Buchungen · Summe ${money(rows.reduce((s,t)=>s+Number(t.amount),0))}`;$('txTable').innerHTML=txHtml(rows)}
 async function load(){let {data:spaces,error}=await client.from('finance_spaces').select('*').order('created_at');if(error)throw error;state.spaces=spaces||[];state.space=state.spaces.find(s=>s.kind==='private'&&s.created_by===state.session.user.id)||state.spaces[0];if(!state.space)throw Error('Kein Finanzbereich vorhanden. Bitte Supabase SQL-Einrichtung überprüfen.');const names=['accounts','categories','transactions','recurring','bills','notes'];let values=await Promise.all(names.map(name=>query(name)));names.forEach((n,i)=>state[n]=values[i]);render()}
 async function init(){if(!window.supabase?.createClient){$('loginMsg').textContent='Supabase-Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen.';$('loginMsg').classList.remove('hidden');return}client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:false}});let {data:{session},error}=await client.auth.getSession();if(error)console.warn(error);if(session)await enter(session);client.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){state.session=null;$('auth').classList.remove('hidden')}})}
-async function enter(session){state.session=session;$('auth').classList.add('hidden');$('userLabel').textContent=session.user.email||'Privater Benutzer';await load()}
-$('loginForm').onsubmit=async e=>{e.preventDefault();let btn=e.target.querySelector('button');btn.disabled=true;$('loginMsg').classList.add('hidden');try{if(!client)throw Error('Supabase nicht verfügbar');let {data,error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;await enter(data.session);$('password').value=''}catch(err){$('loginMsg').textContent='Anmeldung fehlgeschlagen: '+err.message;$('loginMsg').classList.remove('hidden')}finally{btn.disabled=false}};
+async function enter(session){state.session=session;$('auth').classList.add('hidden');$('userLabel').textContent='Fabian';await load()}
+$('loginForm').onsubmit=async e=>{e.preventDefault();let btn=e.target.querySelector('button');btn.disabled=true;$('loginMsg').classList.add('hidden');try{if(!client)throw Error('Supabase nicht verfügbar');const username=$('email').value.trim();
+ if(!/^[a-zA-Z0-9_-]{2,40}$/.test(username))throw Error('Bitte einen gültigen Benutzernamen eingeben.');
+ if(username.toLowerCase()!=='fabian')throw Error('Diese Finanz-App ist ausschließlich für Fabian freigegeben.');
+ const {data:lookup,error:lookupError}=await client.rpc('app_login_email',{p_username:username});
+ if(lookupError)throw Error('Benutzername-Anmeldung noch nicht eingerichtet. Bitte zuerst den SQL-Code in Supabase ausführen.');
+ if(!lookup)throw Error('Benutzername oder Passwort nicht korrekt.');
+ let {data,error}=await client.auth.signInWithPassword({email:lookup,password:$('password').value});if(error)throw error;await enter(data.session);$('password').value=''}catch(err){$('loginMsg').textContent='Anmeldung fehlgeschlagen: '+err.message;$('loginMsg').classList.remove('hidden')}finally{btn.disabled=false}};
 // iOS Password AutoFill can emit an input/change event after Face ID.
 // Auto-submit only when both fields were autofilled, never on normal typing.
 let autofillAttempted=false;
 function tryAutofillLogin(event){
  if(autofillAttempted||!$('auth')||$('auth').classList.contains('hidden'))return;
- const both=$('email').value.includes('@')&&$('password').value.length>0;
+ const both=$('email').value.trim().length>0&&$('password').value.length>0;
  const replacement=event?.inputType==='insertReplacementText'||event?.inputType==='insertFromAutoFill';
  if(both&&replacement){autofillAttempted=true;$('loginForm').requestSubmit();}
 }
