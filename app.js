@@ -80,7 +80,7 @@ function tryAutofillLogin(event){
  if(autofillAttempted||!$('auth')||$('auth').classList.contains('hidden'))return;
  const both=$('email').value.trim().length>0&&$('password').value.length>0;
  const replacement=event?.inputType==='insertReplacementText'||event?.inputType==='insertFromAutoFill';
- if(both&&replacement){autofillAttempted=true;$('loginForm').requestSubmit();}
+ if(both&&replacement){autofillAttempted=true;document.activeElement?.blur();$('loginForm').requestSubmit();}
 }
 $('email').addEventListener('input',tryAutofillLogin);
 $('password').addEventListener('input',tryAutofillLogin);
