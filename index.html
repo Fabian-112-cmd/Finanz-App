@@ -334,7 +334,7 @@ h1{font-size:29px}
 }
 </style>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"></head><body>
-<div id="auth"><div class="panel"><h2>Anmelden</h2><form id="loginForm"><label>Benutzername<input id="email" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required placeholder="Fabian oder Maya"></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><button class="primary">Anmelden</button></form><div id="loginMsg" class="message hidden"></div></div></div>
+<div id="auth"><div class="panel"><h2>Anmelden</h2><form id="loginForm"><label>Benutzername<input id="email" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required placeholder="Fabian oder Maya"></label><label>Passwort<input id="password" type="password" autocomplete="current-password" enterkeyhint="go" required></label><button class="primary" id="loginSubmit" type="submit">Anmelden</button></form><div id="loginMsg" class="message hidden"></div></div></div>
 <aside><h2>◈ Meine Finanzen</h2><button id="mobileMenuToggle" type="button" aria-expanded="false" aria-controls="menu">☰ Menü <span aria-hidden="true">▾</span></button><div id="menu"><button data-tab="dashboard" class="active">◫ Übersicht</button><button data-tab="transactions">⇄ Buchungen</button><button data-tab="analysis">⌕ Auswertung & Filter</button><button data-tab="calendar">▦ Finanzkalender</button><button data-tab="statistics">▥ Statistiken</button><button data-tab="budget">◉ Budgetplanung</button><button data-tab="goals">◇ Sparziele</button><button data-tab="recurring">↻ Fixkosten & Gehalt</button><button data-tab="accounts">▣ Konten & Sparbücher</button><button data-tab="bills">▤ Rechnungen</button><button data-tab="notes">✎ Notizen</button><button data-tab="settings">⚙ Einstellungen</button></div></aside>
 <main><header><div><h1 id="pageTitle">Übersicht</h1><div class="muted" id="spaceLabel">Meine privaten Finanzen</div></div><div class="actions"><span id="userLabel" class="muted"></span><button id="refreshBtn">↻ Aktualisieren</button><button id="logoutBtn">Abmelden</button></div></header><div id="globalMsg" class="message hidden"></div>
 <section id="dashboard" class="section active"><p class="muted" id="dashboardPeriodInfo" style="margin:0 0 10px">Automatisch: seit dem letzten Gehalt</p><div class="metrics"><div class="metric"><span>Girokonto · aktueller Stand</span><b id="mChecking">–</b></div><div class="metric"><span>Sparbuch · aktueller Stand</span><b id="mSavings">–</b></div><div class="metric"><span>Ausgaben seit letztem Gehalt</span><b id="mExpense">–</b></div><div class="metric"><span>Verbleibend nach geplanten Zahlungen*</span><b id="mForecast">–</b></div></div><div class="grid"><div class="panel"><h3>Kontostände</h3><div id="accountSummary"></div></div><div class="panel"><h3>Fällige / erwartete Zahlungen</h3><div id="dueSummary"></div></div></div><div class="panel"><h3>Buchungen seit dem letzten Gehalt</h3><div id="dashboardTransactions"></div></div><small>*Prognose nur aus geplanten, noch nicht bestätigten Zahlungen. Tatsächliche Zahlung erst nach Buchung.</small><div class="panel" id="totalAssetsPanel"><span class="muted">Gesamtvermögen · alle Konten</span><h3 id="mBalance" style="margin:4px 0 0">–</h3></div></section>
@@ -386,4 +386,65 @@ h1{font-size:29px}
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkVersion()});
  window.addEventListener('pageshow',checkVersion);
 })();
-</script></body></html>
+</script><style id="ios-login-keyboard-fix">
+/* Only the login screen: keep the submit action reachable above the iPhone keyboard. */
+@media (max-width:700px) {
+  #auth.keyboard-visible { align-items:start; overflow-y:auto; padding-top:16px; padding-bottom:18px; }
+  #auth.keyboard-visible .panel { margin:0 auto; }
+  #auth.keyboard-visible #loginSubmit { position:sticky; bottom:8px; z-index:2; box-shadow:0 3px 15px #0b292640; }
+}
+@keyframes loginAutofilled { from { opacity:.99 } to { opacity:1 } }
+#auth input:-webkit-autofill { animation-name:loginAutofilled; animation-duration:.01s; }
+</style>
+<script id="ios-login-keyboard-script">
+(function(){
+  const auth=document.getElementById('auth');
+  const form=document.getElementById('loginForm');
+  const user=document.getElementById('email');
+  const pass=document.getElementById('password');
+  const submit=document.getElementById('loginSubmit');
+  if(!auth||!form||!user||!pass||!submit)return;
+  let focusStartValue='', autofillHandled=false;
+  function filled(){return !!(user.value.trim()&&pass.value);}
+  function dismissKeyboard(){
+    if(document.activeElement===user||document.activeElement===pass) document.activeElement.blur();
+    auth.classList.remove('keyboard-visible');
+  }
+  function autofillComplete(){
+    if(!filled()||autofillHandled)return;
+    autofillHandled=true;
+    dismissKeyboard();
+    // Do not submit automatically: iOS does not reliably distinguish autofill from typing.
+    // The user can now tap Anmelden without manually dismissing the keyboard.
+  }
+  pass.addEventListener('focus',()=>{focusStartValue=pass.value;autofillHandled=false;auth.classList.add('keyboard-visible');});
+  user.addEventListener('focus',()=>auth.classList.add('keyboard-visible'));
+  [user,pass].forEach(el=>el.addEventListener('animationstart',e=>{
+    if(e.animationName==='loginAutofilled')setTimeout(autofillComplete,80);
+  }));
+  pass.addEventListener('change',()=>{if(filled())dismissKeyboard();});
+  pass.addEventListener('input',e=>{
+    // iOS password-manager replacements may arrive as one insertion, not key presses.
+    if(filled()&&(e.inputType==='insertReplacementText'||e.inputType==='insertFromPaste'))autofillComplete();
+  });
+  pass.addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&filled()){e.preventDefault();dismissKeyboard();form.requestSubmit(submit);}
+  });
+  form.addEventListener('submit',dismissKeyboard);
+  // Some iOS versions fill both fields without firing input/change/animation events.
+  // Check briefly after focus; only treat a previously empty password as autofilled
+  // if it arrives in one step with at least 4 characters.
+  let previous='';
+  pass.addEventListener('focus',()=>{previous=pass.value;let count=0;const poll=setInterval(()=>{
+    if(document.activeElement!==pass||++count>24){clearInterval(poll);return;}
+    const current=pass.value;
+    if(filled()&&!previous&&current.length>=4){clearInterval(poll);autofillComplete();return;}
+    previous=current;
+  },120);});
+  // Don't leave a keyboard-specific layout active after moving away.
+  auth.addEventListener('focusout',()=>setTimeout(()=>{
+    if(!auth.contains(document.activeElement)||!document.activeElement.matches('input'))auth.classList.remove('keyboard-visible');
+  },100));
+})();
+</script>
+</body></html>
