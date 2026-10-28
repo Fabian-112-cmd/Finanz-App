@@ -60,9 +60,42 @@ function render(){period();const now=today();const payday=latestPayday(now);cons
  $('notesList').innerHTML=state.notes.filter(n=>!String(n.title).startsWith('__finance_v2__')).map(n=>`<div class="panel"><b>${esc(n.title)}</b><p style="white-space:pre-wrap">${esc(n.body)}</p><button data-delete="notes" data-id="${n.id}" class="danger">Löschen</button></div>`).join('')||'<p class="muted">Noch keine Notizen.</p>';
  $('spaceList').innerHTML=state.spaces.map(s=>`<p><span class="pill">${s.kind==='private'?'Privat':'Gemeinsam'}</span> ${esc(s.name)} ${s.id===state.space.id?'✓ Aktiv':''}</p>`).join('');renderTx();renderExtras();
 }
-function txHtml(rows,allowDelete=true){return '<div class="scroll"><table><thead><tr><th>Datum</th><th>Bezeichnung</th><th>Kategorie</th><th>Konto</th><th>Betrag</th>'+(allowDelete?'<th></th>':'')+'</tr></thead><tbody>'+rows.map(t=>`<tr><td>${dateLabel(t.booked_on)}</td><td>${esc(t.title)}</td><td>${esc(categoryName(t.category_id)||t.transaction_type)}</td><td>${esc(accountName(t.account_id))}</td><td class="num ${Number(t.amount)>=0?'positive':'negative'}">${money(t.amount)}</td>${allowDelete?`<td><button class="danger" data-delete="transactions" data-id="${t.id}">Löschen</button></td>`:''}</tr>`).join('')+'</tbody></table></div>'}
+function txHtml(rows,allowDelete=true){return '<div class="scroll"><table><thead><tr><th>Datum</th><th>Bezeichnung</th><th>Kategorie</th><th>Konto</th><th>Betrag</th>'+(allowDelete?'<th></th>':'')+'</tr></thead><tbody>'+rows.map(t=>`<tr><td>${dateLabel(t.booked_on)}</td><td>${esc(t.title)}</td><td>${esc(categoryName(t.category_id)||t.transaction_type)}</td><td>${esc(accountName(t.account_id))}</td><td class="num ${Number(t.amount)>=0?'positive':'negative'}">${money(t.amount)}</td>${allowDelete?`<td>${t.transaction_type==='transfer'?'':`<button data-edit-tx="${t.id}">Bearbeiten</button> `}<button class="danger" data-delete="transactions" data-id="${t.id}">Löschen</button></td>`:''}</tr>`).join('')+'</tbody></table></div>'}
+function renderBookings(){
+ const search=$('bookingsSearch').value.trim().toLowerCase(),type=$('bookingsType').value,limit=$('bookingsLimit').value;
+ let rows=state.transactions.filter(t=>(type==='all'||t.transaction_type===type)&&(!search||[t.title,t.note,categoryName(t.category_id),accountName(t.account_id)].join(' ').toLowerCase().includes(search))).sort((a,b)=>b.booked_on.localeCompare(a.booked_on));
+ $('bookingsCount').textContent=`${rows.length} Buchungen gefunden`;
+ $('bookingsTable').innerHTML=txHtml(limit==='all'?rows:rows.slice(0,Number(limit)));
+}
+let editingTxId=null;
+async function resolveTxCategory(name,type){
+ name=name.trim();if(!name)return null;
+ const kind=type==='income'?'income':'expense';
+ const existing=state.categories.find(c=>c.name.toLowerCase()===name.toLowerCase()&&c.category_type===kind);
+ if(existing)return existing.id;
+ let {data,error}=await client.from('finance_categories').insert({space_id:state.space.id,name,category_type:kind}).select('id').single();
+ if(error&&error.code==='23505'){
+  const found=await client.from('finance_categories').select('id').eq('space_id',state.space.id).eq('name',name).eq('category_type',kind).maybeSingle();
+  if(found.error)throw found.error;
+  if(!found.data)throw Error('Kategorie nicht gefunden. Bitte aktualisieren.');
+  return found.data.id;
+ }
+ if(error)throw error;
+ return data.id;
+}
+$('editTxCancel').onclick=()=>$('editTxDialog').close();
+$('editTxForm').onsubmit=e=>{e.preventDefault();run(async()=>{
+ const tx=state.transactions.find(t=>t.id===editingTxId);
+ if(!tx||tx.transaction_type==='transfer')throw Error('Diese Buchung kann nicht einzeln bearbeitet werden.');
+ const x=getForm(e.target),amount=Number(x.amount);
+ if(!(amount>0)||!Number.isFinite(amount))throw Error('Bitte einen gültigen Betrag eingeben.');
+ const category_id=await resolveTxCategory(x.category,x.transaction_type);
+ await update('transactions',editingTxId,{booked_on:x.booked_on,account_id:x.account_id,transaction_type:x.transaction_type,title:x.title,note:x.note||null,amount:signed(x.transaction_type,amount),category_id});
+ $('editTxDialog').close();editingTxId=null;await load();message('Buchung aktualisiert.',true);
+})};
+['bookingsSearch','bookingsType','bookingsLimit'].forEach(id=>$(id).addEventListener('input',renderBookings));
 function filteredTx(){let rows=state.transactions.slice();if($('filterPeriod').value==='selected')rows=rows.filter(t=>t.booked_on>=state.period.from&&t.booked_on<=state.period.to);const search=$('filterSearch').value.trim().toLowerCase(),cat=$('filterCategory').value.trim().toLowerCase(),type=$('filterType').value,amount=$('filterAmount').value;rows=rows.filter(t=>(!search||[t.title,t.note,categoryName(t.category_id),accountName(t.account_id)].join(' ').toLowerCase().includes(search))&&(!cat||categoryName(t.category_id).toLowerCase().includes(cat))&&(type==='all'||t.transaction_type===type)&&(amount==='all'||(amount==='under100'?Math.abs(Number(t.amount))<100:Math.abs(Number(t.amount))>=100)));const sort=$('filterSort').value;rows.sort((a,b)=>sort==='az'?a.title.localeCompare(b.title):sort==='za'?b.title.localeCompare(a.title):sort==='low'?Math.abs(Number(a.amount))-Math.abs(Number(b.amount)):sort==='high'?Math.abs(Number(b.amount))-Math.abs(Number(a.amount)):b.booked_on.localeCompare(a.booked_on));return rows}
-function renderTx(){let rows=filteredTx();$('txCount').textContent=`${rows.length} Buchungen · Summe ${money(rows.reduce((s,t)=>s+Number(t.amount),0))}`;$('txTable').innerHTML=txHtml(rows)}
+function renderTx(){let rows=filteredTx();$('txCount').textContent=`${rows.length} Buchungen · Summe ${money(rows.reduce((s,t)=>s+Number(t.amount),0))}`;$('txTable').innerHTML=txHtml(rows);renderBookings()}
 async function load(){let {data:spaces,error}=await client.from('finance_spaces').select('*').order('created_at');if(error)throw error;state.spaces=spaces||[];state.space=state.spaces.find(s=>s.kind==='private'&&s.created_by===state.session.user.id)||state.spaces[0];if(!state.space)throw Error('Kein Finanzbereich vorhanden. Bitte Supabase SQL-Einrichtung überprüfen.');const names=['accounts','categories','transactions','recurring','bills','notes'];let values=await Promise.all(names.map(name=>query(name)));names.forEach((n,i)=>state[n]=values[i]);render()}
 async function init(){if(!window.supabase?.createClient){$('loginMsg').textContent='Supabase-Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen.';$('loginMsg').classList.remove('hidden');return}client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:false}});let {data:{session},error}=await client.auth.getSession();if(error)console.warn(error);if(session)await enter(session);client.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){state.session=null;$('auth').classList.remove('hidden')}})}
 async function enter(session){state.session=session;$('auth').classList.add('hidden');$('userLabel').textContent='Fabian';await load()}
@@ -123,7 +156,15 @@ $('bookingCancel').onclick=()=>$('bookingDialog').close();
 $('bookingForm').onsubmit=e=>{e.preventDefault();run(async()=>{if(!bookingTarget)throw Error('Keine geplante Zahlung ausgewählt.');let {id,due}=bookingTarget,r=state.recurring.find(x=>x.id===id);if(!r)throw Error('Zahlung nicht gefunden.');if(confirmed(r,due))throw Error('Diese Zahlung wurde bereits bestätigt.');let x=getForm(e.target),amount=Number(x.amount);if(!(amount>0))throw Error('Bitte gültigen Betrag eingeben.');await insert('transactions',{space_id:state.space.id,account_id:x.account_id,booked_on:x.booked_on,title:r.title,amount:signed(r.entry_type,amount),transaction_type:r.entry_type,import_reference:recurringReference(r,due)});$('bookingDialog').close();bookingTarget=null;await load();message('Tatsächliche Zahlung gebucht.',true)})};
 $('billForm').onsubmit=e=>{e.preventDefault();run(async()=>{let x=getForm(e.target);x.amount=Number(x.amount);x.due_on=x.due_on||null;await insert('bills',{...x,space_id:state.space.id});e.target.reset();await load();message('Rechnung gespeichert.',true)})};
 $('noteForm').onsubmit=e=>{e.preventDefault();run(async()=>{await insert('notes',{...getForm(e.target),space_id:state.space.id});e.target.reset();await load();message('Notiz gespeichert.',true)})};
-document.addEventListener('click',e=>{let b=e.target.closest('button');if(!b)return;if(b.dataset.delete)run(()=>remove(b.dataset.delete,b.dataset.id));if(b.dataset.payBill)run(async()=>{await update('bills',b.dataset.payBill,{status:'paid',paid_on:today()});await load();message('Rechnung als bezahlt markiert. Kontobuchung ggf. separat erfassen.',true)});
+document.addEventListener('click',e=>{let b=e.target.closest('button');if(!b)return;if(b.dataset.delete)run(()=>remove(b.dataset.delete,b.dataset.id));if(b.dataset.editTx){
+ const tx=state.transactions.find(t=>t.id===b.dataset.editTx);if(!tx)return;
+ if(tx.transaction_type==='transfer')return message('Umbuchungen bestehen aus zwei Buchungen und können nicht einzeln bearbeitet werden.');
+ editingTxId=tx.id;const f=$('editTxForm');
+ f.elements.booked_on.value=tx.booked_on;f.elements.account_id.value=tx.account_id;
+ f.elements.transaction_type.value=tx.transaction_type;f.elements.title.value=tx.title;
+ f.elements.category.value=categoryName(tx.category_id);f.elements.amount.value=Math.abs(Number(tx.amount));f.elements.note.value=tx.note||'';
+ $('editTxDialog').showModal();
+}if(b.dataset.payBill)run(async()=>{await update('bills',b.dataset.payBill,{status:'paid',paid_on:today()});await load();message('Rechnung als bezahlt markiert. Kontobuchung ggf. separat erfassen.',true)});
 if(b.dataset.editRec){let r=state.recurring.find(x=>x.id===b.dataset.editRec);if(!r)return;editingRecurringId=r.id;for(let [k,v] of Object.entries(r)){let el=$('recForm').elements.namedItem(k);if(el)el.value=v??'';}$('recSaveBtn').textContent='Änderungen speichern';$('recCancelBtn').classList.remove('hidden');$('recForm').scrollIntoView({behavior:'smooth',block:'start'})}
 if(b.dataset.toggleRec)run(async()=>{let r=state.recurring.find(x=>x.id===b.dataset.toggleRec);await update('recurring',r.id,{active:!r.active});await load();message(r.active?'Zahlung pausiert.':'Zahlung aktiviert.',true)});
 if(b.dataset.deleteRec)run(async()=>{if(!confirm('Regelmäßige Zahlung wirklich löschen? Bereits gebuchte Umsätze bleiben bestehen.'))return;let {error}=await client.from('finance_recurring').delete().eq('id',b.dataset.deleteRec).eq('space_id',state.space.id);if(error)throw error;if(editingRecurringId===b.dataset.deleteRec)resetRecurringForm();await load();message('Regelmäßige Zahlung gelöscht. Bereits gebuchte Umsätze bleiben bestehen.',true)});
