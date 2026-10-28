@@ -350,7 +350,7 @@ h1{font-size:29px}
 <section id="notes" class="section"><div class="panel"><h3>Private Notiz</h3><form id="noteForm"><label>Titel<input name="title" required></label><label>Text<textarea name="body"></textarea></label><div class="actions"><button class="primary">Notiz speichern</button></div></form></div><div class="panel"><h3>Meine Notizen</h3><div id="notesList"></div></div></section>
 <section id="settings" class="section"><div class="panel"><h3>Privater Bereich & Benutzer</h3><p>Du arbeitest aktuell in deinem privaten Finanzbereich. Deine Freundin erhält keinen Zugriff, solange du sie nicht ausdrücklich zu einem späteren gemeinsamen Bereich einlädst.</p><div id="spaceList"></div><p class="muted">Die Datenbank ist auf getrennte private und gemeinsame Bereiche vorbereitet. Einladungen und Rollenverwaltung werden erst in einer späteren Erweiterung freigeschaltet.</p></div><div class="panel"><h3>Datensicherung</h3><p>Exportiere deine Finanzdaten regelmäßig. Die JSON-Datei ist <b>nicht verschlüsselt</b> – vertraulich aufbewahren.</p><div class="actions"><button id="backupBtn">JSON-Backup herunterladen</button><button id="printOverview">Übersicht drucken / PDF</button></div></div></section>
 <footer>Meine Finanzen · Privates Supabase-Projekt · Design 2 – Modern Nature</footer></main>
-<nav id="mobileBottomNav" aria-label="Schnellnavigation"><button type="button" data-quick-tab="dashboard"><span class="nav-icon">⌂</span>Übersicht</button><button type="button" data-quick-tab="transactions"><span class="nav-icon">⇄</span>Buchungen</button><button type="button" data-quick-tab="accounts"><span class="nav-icon">▣</span>Konten</button><button type="button" data-quick-tab="statistics"><span class="nav-icon">▥</span>Analyse</button><button type="button" id="quickMore"><span class="nav-icon">☰</span>Mehr</button></nav><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script src="app.js?v=11-20261027-faceid"></script><script>
+<nav id="mobileBottomNav" aria-label="Schnellnavigation"><button type="button" data-quick-tab="dashboard"><span class="nav-icon">⌂</span>Übersicht</button><button type="button" data-quick-tab="transactions"><span class="nav-icon">⇄</span>Buchungen</button><button type="button" data-quick-tab="accounts"><span class="nav-icon">▣</span>Konten</button><button type="button" data-quick-tab="statistics"><span class="nav-icon">▥</span>Analyse</button><button type="button" id="quickMore"><span class="nav-icon">☰</span>Mehr</button></nav><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script src="app.js?v=11-20261028"></script><script>
 (function(){
  const toggle=document.getElementById('mobileMenuToggle');
  const menu=document.getElementById('menu');
@@ -367,24 +367,12 @@ h1{font-size:29px}
 })();
 </script><script>
 (function(){
- const VERSION='10-20261027';
- if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v='+VERSION,{updateViaCache:'none'}).catch(()=>{});}
- let lastCheck=0;
- async function checkVersion(){
-  if(document.visibilityState!=='visible'||Date.now()-lastCheck<15000)return;
-  lastCheck=Date.now();
-  try{
-   const r=await fetch('./version.json?nocache='+Date.now(),{cache:'no-store'});
-   if(!r.ok)return;
-   const info=await r.json();
-   if(info.version&&info.version!==VERSION){
-    // Reopen on a new version; no finance data is stored in browser caches.
-    location.replace('./?v='+encodeURIComponent(info.version));
-   }
-  }catch(e){/* offline: leave current page usable */}
+ const VERSION='11-20261028';
+ // No automatic navigation on version differences: prevents endless reload loops.
+ if('serviceWorker' in navigator){
+   navigator.serviceWorker.register('./sw.js?v='+VERSION,{updateViaCache:'none'}).catch(()=>{});
  }
- document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkVersion()});
- window.addEventListener('pageshow',checkVersion);
+
 })();
 </script><style id="ios-login-keyboard-fix">
 /* Only the login screen: keep the submit action reachable above the iPhone keyboard. */
