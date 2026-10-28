@@ -38,8 +38,45 @@ function dueOccurrences(r,from,to){let results=[];if(!r.active)return results;le
  }return results}
 function scheduled(){const {from,to}=period();return state.recurring.flatMap(r=>dueOccurrences(r,from,to)).sort((a,b)=>a.due.localeCompare(b.due))}
 function recurringReference(r,date){return 'recurring:'+r.id+':'+date}
-function linkedBooking(r,date){return state.transactions.find(t=>t.import_reference===recurringReference(r,date))||state.transactions.find(t=>!t.import_reference&&t.booked_on===date&&t.title===r.title&&t.account_id===r.account_id&&Math.abs(Number(t.amount)-signed(r.entry_type,r.amount))<0.01)}
+function linkedBooking(r,date){return state.transactions.find(t=>t.import_reference===recurringReference(r,date))||state.transactions.find(t=>!t.import_reference&&t.booked_on===date&&t.title.trim().toLowerCase()===r.title.trim().toLowerCase()&&t.account_id===r.account_id&&(isSalary(r)||Math.abs(Number(t.amount)-signed(r.entry_type,r.amount))<0.01))}
 function confirmed(r,date){return !!linkedBooking(r,date)}
+
+function isSalary(r){return r.entry_type==='income'&&/gehalt|lohn|salary/i.test(r.title)}
+function plannedRows(){
+ const now=today(),from='2026-10-28';
+ const [y,m]=now.slice(0,7).split('-').map(Number);const [ny,nm]=nextMonth(y,m);
+ const to=day(ny,nm,31);
+ return state.recurring.flatMap(r=>dueOccurrences(r,from,to)).sort((a,b)=>a.due.localeCompare(b.due));
+}
+function renderPlannedBookings(){
+ const box=$('plannedBookings');if(!box)return;
+ const rows=plannedRows();
+ box.innerHTML=rows.length?'<div class="scroll"><table><thead><tr><th>Fällig</th><th>Zahlung</th><th>Konto</th><th>Betrag</th><th>Status / Aktion</th></tr></thead><tbody>'+rows.map(r=>{
+  const linked=linkedBooking(r,r.due),salary=isSalary(r),future=r.due>today();
+  const status=linked?'<span class="positive">✓ Gebucht</span>':future?'<span class="muted">Geplant</span>':salary?'<span class="muted">Gehalt bestätigen</span>':'<span class="muted">Noch nicht gebucht</span>';
+  const action=linked?'':` <button data-book-rec="${esc(r.id)}" data-date="${esc(r.due)}">${salary?'Gehalt bestätigen':'Buchung prüfen'}</button>`;
+  return `<tr><td>${dateLabel(r.due)}</td><td>${esc(r.title)}</td><td>${esc(accountName(r.account_id))}</td><td class="num">${money(signed(r.entry_type,r.amount))}</td><td>${status}${action}</td></tr>`;
+ }).join('')+'</tbody></table></div>':'<p class="muted">Keine regelmäßigen Zahlungen für den aktuellen Zeitraum angelegt.</p>';
+}
+let autoPosting=false;
+async function postDueFixedCosts(){
+ if(autoPosting||!state.space)return;autoPosting=true;
+ try{
+  const now=today();const rows=state.recurring.flatMap(r=>dueOccurrences(r,'2026-10-28',now))
+   .filter(r=>r.entry_type==='expense'&&r.account_id&&!linkedBooking(r,r.due));
+  for(const r of rows){
+   // Read latest server data before each insertion; do not overwrite existing records.
+   const {data,error}=await client.from('finance_transactions').select('id,booked_on,title,account_id,amount,import_reference').eq('space_id',state.space.id).eq('account_id',r.account_id).eq('booked_on',r.due);
+   if(error)throw error;
+   const reference=recurringReference(r,r.due);
+   const exists=(data||[]).some(t=>t.import_reference===reference||(t.title.trim().toLowerCase()===r.title.trim().toLowerCase()&&Math.abs(Number(t.amount)-signed(r.entry_type,r.amount))<.01));
+   if(exists)continue;
+   await insert('transactions',{space_id:state.space.id,account_id:r.account_id,booked_on:r.due,title:r.title,amount:signed('expense',r.amount),transaction_type:'expense',import_reference:reference});
+  }
+  if(rows.length){const values=await Promise.all(['accounts','categories','transactions','recurring','bills','notes'].map(n=>query(n)));['accounts','categories','transactions','recurring','bills','notes'].forEach((n,i)=>state[n]=values[i]);}
+ }finally{autoPosting=false;}
+}
+
 function latestPayday(now){
  const salaryIds=new Set(state.recurring.filter(r=>r.entry_type==='income'&&/gehalt|lohn|salary/i.test(r.title)).map(r=>r.id));
  const paid=state.transactions.filter(t=>t.booked_on<=now&&Number(t.amount)>0&&t.transaction_type==='income'&&(Array.from(salaryIds).some(id=>String(t.import_reference||'').startsWith('recurring:'+id+':'))||/gehalt|lohn|salary/i.test(t.title))).sort((a,b)=>b.booked_on.localeCompare(a.booked_on));
@@ -52,6 +89,7 @@ function render(){period();const now=today();const payday=latestPayday(now);cons
  $('accountSummary').innerHTML=state.accounts.length?state.accounts.map(a=>`<p><b>${esc(a.name)}</b> <span style="float:right">${money(balance(a))}</span></p>`).join(''):'<p class="muted">Noch kein Konto angelegt. Beginne bei „Konten & Sparbücher“.</p>';
  const dashboardDue=state.recurring.flatMap(r=>dueOccurrences(r,payday,forecastTo)).sort((a,b)=>a.due.localeCompare(b.due));$('dueSummary').innerHTML=dashboardDue.length?dashboardDue.map(r=>`<p><span class="pill">${dateLabel(r.due)}</span> ${esc(r.title)} · <b>${money(signed(r.entry_type,r.amount))}</b> ${confirmed(r,r.due)?'<span class="positive">✓ Gebucht</span>':'<span class="muted">Geplant</span>'}</p>`).join(''):'<p class="muted">Keine geplanten Zahlungen im Zeitraum.</p>';
  $('dashboardTransactions').innerHTML=txHtml(inPeriod.slice().sort((a,b)=>b.booked_on.localeCompare(a.booked_on)).slice(0,10),false);
+ renderPendingDashboard(now,forecastTo);
  const options=state.accounts.map(a=>`<option value="${esc(a.id)}">${esc(a.name)}</option>`).join('');document.querySelectorAll('select[data-accounts]').forEach(s=>{let old=s.value;s.innerHTML=options||'<option value="">Zuerst Konto anlegen</option>';if(state.accounts.some(a=>a.id===old))s.value=old});
  $('accountsTable').innerHTML='<div class="scroll"><table><thead><tr><th>Konto</th><th>Typ</th><th>Start</th><th>Stichtag</th><th>Aktueller Stand</th></tr></thead><tbody>'+state.accounts.map(a=>`<tr><td>${esc(a.name)}</td><td>${esc(a.account_type)}</td><td>${money(a.opening_balance)}</td><td>${dateLabel(a.opening_date)}</td><td>${money(balance(a))}</td></tr>`).join('')+'</tbody></table></div>';
  $('recTable').innerHTML=due.length?'<div class="scroll"><table><thead><tr><th>Fällig</th><th>Name</th><th>Betrag</th><th>Status</th><th></th></tr></thead><tbody>'+due.map(r=>`<tr><td>${dateLabel(r.due)}</td><td>${esc(r.title)}</td><td>${money(signed(r.entry_type,r.amount))}</td><td>${confirmed(r,r.due)?'✓ Gebucht':'Geplant'}</td><td>${confirmed(r,r.due)?'':`<button data-book-rec="${r.id}" data-date="${r.due}">Als gebucht erfassen</button>`}</td></tr>`).join('')+'</tbody></table></div>':'<p class="muted">Keine geplanten Zahlungen im Zeitraum.</p>';
@@ -62,10 +100,20 @@ function render(){period();const now=today();const payday=latestPayday(now);cons
 }
 function txHtml(rows,allowDelete=true){return '<div class="scroll"><table><thead><tr><th>Datum</th><th>Bezeichnung</th><th>Kategorie</th><th>Konto</th><th>Betrag</th>'+(allowDelete?'<th></th>':'')+'</tr></thead><tbody>'+rows.map(t=>`<tr><td>${dateLabel(t.booked_on)}</td><td>${esc(t.title)}</td><td>${esc(categoryName(t.category_id)||t.transaction_type)}</td><td>${esc(accountName(t.account_id))}</td><td class="num ${Number(t.amount)>=0?'positive':'negative'}">${money(t.amount)}</td>${allowDelete?`<td>${t.transaction_type==='transfer'?'':`<button data-edit-tx="${t.id}">Bearbeiten</button> `}<button class="danger" data-delete="transactions" data-id="${t.id}">Löschen</button></td>`:''}</tr>`).join('')+'</tbody></table></div>'}
 function renderBookings(){
- const search=$('bookingsSearch').value.trim().toLowerCase(),type=$('bookingsType').value,limit=$('bookingsLimit').value;
- let rows=state.transactions.filter(t=>(type==='all'||t.transaction_type===type)&&(!search||[t.title,t.note,categoryName(t.category_id),accountName(t.account_id)].join(' ').toLowerCase().includes(search))).sort((a,b)=>b.booked_on.localeCompare(a.booked_on));
- $('bookingsCount').textContent=`${rows.length} Buchungen gefunden`;
- $('bookingsTable').innerHTML=txHtml(limit==='all'?rows:rows.slice(0,Number(limit)));
+ const search=$('bookingsSearch').value.trim().toLocaleLowerCase('de'),category=$('bookingsCategory').value.trim().toLocaleLowerCase('de'),type=$('bookingsType').value,limit=$('bookingsLimit').value,sort=$('bookingsSort').value;
+ const from=$('bookingsFrom').value,to=$('bookingsTo').value;
+ $('bookingsFromWrap').classList.toggle('hidden',limit!=='custom');$('bookingsToWrap').classList.toggle('hidden',limit!=='custom');
+ let rows=state.transactions.filter(t=>(type==='all'||t.transaction_type===type)&&(!search||String(t.title||'').toLocaleLowerCase('de').includes(search))&&(!category||categoryName(t.category_id).toLocaleLowerCase('de').includes(category))&&(limit!=='custom'||(!from||t.booked_on>=from)&&(!to||t.booked_on<=to)));
+ const cmp=(a,b)=>String(a||'').localeCompare(String(b||''),'de',{sensitivity:'base'});
+ rows.sort((a,b)=>sort==='dateAsc'?cmp(a.booked_on,b.booked_on):sort==='title'?cmp(a.title,b.title)||cmp(b.booked_on,a.booked_on):sort==='category'?cmp(categoryName(a.category_id),categoryName(b.category_id))||cmp(b.booked_on,a.booked_on):sort==='amountDesc'?Math.abs(Number(b.amount))-Math.abs(Number(a.amount)):cmp(b.booked_on,a.booked_on));
+ const shown=limit==='all'||limit==='custom'?rows:rows.slice(0,Number(limit));
+ const expenses=shown.reduce((s,t)=>s+(Number(t.amount)<0&&t.transaction_type!=='transfer'?Math.abs(Number(t.amount)):0),0);
+ const incomes=shown.reduce((s,t)=>s+(Number(t.amount)>0&&t.transaction_type!=='transfer'?Number(t.amount):0),0);
+ const net=shown.reduce((s,t)=>s+(t.transaction_type==='transfer'?0:Number(t.amount)),0);
+ $('bookingsTotals').innerHTML=`<div class="bookings-total"><span>Ausgaben · Auswahl</span><b class="negative">${money(expenses)}</b></div><div class="bookings-total"><span>Einnahmen · Auswahl</span><b class="positive">${money(incomes)}</b></div><div class="bookings-total"><span>Gesamtbetrag · Saldo</span><b class="${net<0?'negative':'positive'}">${money(net)}</b></div>`;
+ $('bookingsCount').textContent=`${shown.length} von ${rows.length} passenden Buchungen angezeigt · Summe bezieht sich auf die angezeigten Buchungen`;
+ $('bookingsTable').innerHTML=shown.length?txHtml(shown):'<p class="muted">Keine Buchungen für diese Auswahl gefunden.</p>';
+ renderPlannedBookings();
 }
 let editingTxId=null;
 async function resolveTxCategory(name,type){
@@ -93,10 +141,10 @@ $('editTxForm').onsubmit=e=>{e.preventDefault();run(async()=>{
  await update('transactions',editingTxId,{booked_on:x.booked_on,account_id:x.account_id,transaction_type:x.transaction_type,title:x.title,note:x.note||null,amount:signed(x.transaction_type,amount),category_id});
  $('editTxDialog').close();editingTxId=null;await load();message('Buchung aktualisiert.',true);
 })};
-['bookingsSearch','bookingsType','bookingsLimit'].forEach(id=>$(id).addEventListener('input',renderBookings));
+['bookingsSearch','bookingsCategory','bookingsType','bookingsLimit','bookingsSort','bookingsFrom','bookingsTo'].forEach(id=>$(id).addEventListener('input',renderBookings));
 function filteredTx(){let rows=state.transactions.slice();if($('filterPeriod').value==='selected')rows=rows.filter(t=>t.booked_on>=state.period.from&&t.booked_on<=state.period.to);if($('filterPeriod').value==='custom'){const from=$('filterFrom').value,to=$('filterTo').value;rows=rows.filter(t=>(!from||t.booked_on>=from)&&(!to||t.booked_on<=to));}const search=$('filterSearch').value.trim().toLowerCase(),cat=$('filterCategory').value.trim().toLowerCase(),type=$('filterType').value,amount=$('filterAmount').value;rows=rows.filter(t=>(!search||[t.title,t.note,categoryName(t.category_id),accountName(t.account_id)].join(' ').toLowerCase().includes(search))&&(!cat||categoryName(t.category_id).toLowerCase().includes(cat))&&(type==='all'||t.transaction_type===type)&&(amount==='all'||(amount==='under100'?Math.abs(Number(t.amount))<100:Math.abs(Number(t.amount))>=100)));const sort=$('filterSort').value;rows.sort((a,b)=>sort==='az'?a.title.localeCompare(b.title):sort==='za'?b.title.localeCompare(a.title):sort==='low'?Math.abs(Number(a.amount))-Math.abs(Number(b.amount)):sort==='high'?Math.abs(Number(b.amount))-Math.abs(Number(a.amount)):b.booked_on.localeCompare(a.booked_on));return rows}
 function renderTx(){let rows=filteredTx();$('txCount').textContent=`${rows.length} Buchungen · Summe ${money(rows.reduce((s,t)=>s+Number(t.amount),0))}`;$('txTable').innerHTML=txHtml(rows);renderBookings()}
-async function load(){let {data:spaces,error}=await client.from('finance_spaces').select('*').order('created_at');if(error)throw error;state.spaces=spaces||[];state.space=state.spaces.find(s=>s.kind==='private'&&s.created_by===state.session.user.id)||state.spaces[0];if(!state.space)throw Error('Kein Finanzbereich vorhanden. Bitte Supabase SQL-Einrichtung überprüfen.');const names=['accounts','categories','transactions','recurring','bills','notes'];let values=await Promise.all(names.map(name=>query(name)));names.forEach((n,i)=>state[n]=values[i]);render()}
+async function load(){let {data:spaces,error}=await client.from('finance_spaces').select('*').order('created_at');if(error)throw error;state.spaces=spaces||[];state.space=state.spaces.find(s=>s.kind==='private'&&s.created_by===state.session.user.id)||state.spaces[0];if(!state.space)throw Error('Kein Finanzbereich vorhanden. Bitte Supabase SQL-Einrichtung überprüfen.');const names=['accounts','categories','transactions','recurring','bills','notes'];let values=await Promise.all(names.map(name=>query(name)));names.forEach((n,i)=>state[n]=values[i]);try{await postDueFixedCosts()}catch(err){console.warn("Fixkosten-Abgleich fehlgeschlagen",err);message("Fixkosten konnten nicht automatisch abgeglichen werden: "+err.message)}render()}
 async function init(){if(!window.supabase?.createClient){$('loginMsg').textContent='Supabase-Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen.';$('loginMsg').classList.remove('hidden');return}client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:false}});let {data:{session},error}=await client.auth.getSession();if(error)console.warn(error);if(session)await enter(session);client.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){state.session=null;$('auth').classList.remove('hidden')}})}
 async function enter(session){state.session=session;$('auth').classList.add('hidden');$('userLabel').textContent='Fabian';await load()}
 $('loginForm').onsubmit=async e=>{e.preventDefault();let btn=e.target.querySelector('button');btn.disabled=true;$('loginMsg').classList.add('hidden');try{if(!client)throw Error('Supabase nicht verfügbar');const username=$('email').value.trim();
@@ -168,7 +216,7 @@ document.addEventListener('click',e=>{let b=e.target.closest('button');if(!b)ret
 if(b.dataset.editRec){let r=state.recurring.find(x=>x.id===b.dataset.editRec);if(!r)return;editingRecurringId=r.id;for(let [k,v] of Object.entries(r)){let el=$('recForm').elements.namedItem(k);if(el)el.value=v??'';}$('recSaveBtn').textContent='Änderungen speichern';$('recCancelBtn').classList.remove('hidden');$('recForm').scrollIntoView({behavior:'smooth',block:'start'})}
 if(b.dataset.toggleRec)run(async()=>{let r=state.recurring.find(x=>x.id===b.dataset.toggleRec);await update('recurring',r.id,{active:!r.active});await load();message(r.active?'Zahlung pausiert.':'Zahlung aktiviert.',true)});
 if(b.dataset.deleteRec)run(async()=>{if(!confirm('Regelmäßige Zahlung wirklich löschen? Bereits gebuchte Umsätze bleiben bestehen.'))return;let {error}=await client.from('finance_recurring').delete().eq('id',b.dataset.deleteRec).eq('space_id',state.space.id);if(error)throw error;if(editingRecurringId===b.dataset.deleteRec)resetRecurringForm();await load();message('Regelmäßige Zahlung gelöscht. Bereits gebuchte Umsätze bleiben bestehen.',true)});
-if(b.dataset.bookRec){let r=state.recurring.find(x=>x.id===b.dataset.bookRec),date=b.dataset.date;if(!r?.account_id)return showError(Error('Bitte bei der regelmäßigen Zahlung ein Konto hinterlegen.'));if(confirmed(r,date))return showError(Error('Diese Zahlung wurde bereits gebucht.'));bookingTarget={id:r.id,due:date};$('bookingTitle').textContent=r.title+' · geplant für '+dateLabel(date);let f=$('bookingForm');f.elements.booked_on.value=today();f.elements.amount.value=Number(r.amount);f.elements.account_id.value=r.account_id;$('bookingDialog').showModal()}
+if(b.dataset.bookRec){let r=state.recurring.find(x=>x.id===b.dataset.bookRec),date=b.dataset.date;if(!r?.account_id)return showError(Error('Bitte bei der regelmäßigen Zahlung ein Konto hinterlegen.'));if(confirmed(r,date))return showError(Error('Diese Zahlung wurde bereits gebucht.'));bookingTarget={id:r.id,due:date};$('bookingTitle').textContent=r.title+' · geplant für '+dateLabel(date);let f=$('bookingForm');f.elements.booked_on.value=date;f.elements.amount.value=Number(r.amount);f.elements.account_id.value=r.account_id;$('bookingDialog').showModal()}
 });
 function download(name,content,type){let blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000)}
 $('csvBtn').onclick=()=>{let rows=filteredTx();let csv=[['Datum','Bezeichnung','Kategorie','Konto','Art','Betrag','Notiz'],...rows.map(t=>[t.booked_on,t.title,categoryName(t.category_id),accountName(t.account_id),t.transaction_type,Number(t.amount).toFixed(2).replace('.',','),t.note||''])].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n');download('finanzen-buchungen.csv','\ufeff'+csv,'text/csv;charset=utf-8')};
@@ -221,3 +269,25 @@ for(const [id,delta] of [['calendarPrev',-1],['calendarNext',1]]){
   renderExtras();
  });
 }
+
+// Dashboard: open, not yet confirmed recurring expenses. Read-only, no automatic bookings.
+function pendingDashboardItems(now,until){
+ return state.recurring.filter(r=>r.entry_type==='expense').flatMap(r=>dueOccurrences(r,now,until))
+  .filter(r=>!confirmed(r,r.due)).sort((a,b)=>a.due.localeCompare(b.due));
+}
+function renderPendingDashboard(now,until){
+ const rows=pendingDashboardItems(now,until);
+ const total=rows.reduce((sum,r)=>sum+Number(r.amount||0),0);
+ const all=state.recurring.filter(r=>r.entry_type==='expense').flatMap(r=>dueOccurrences(r,now,until));
+ const paid=all.length-rows.length;
+ const ratio=all.length?Math.max(0,Math.min(100,Math.round(paid/all.length*100))):100;
+ $('mPendingCount').textContent=rows.length+' offen';
+ $('mPendingAmount').textContent=money(total)+' noch geplant';
+ $('pendingDonut').style.background=`conic-gradient(#16815f 0% ${ratio}%,#dce9df ${ratio}% 100%)`;
+ $('pendingDonutText').textContent=ratio+'%';
+ $('pendingDetailsInfo').textContent='Offene geplante Ausgaben von '+dateLabel(now)+' bis '+dateLabel(until)+' · '+money(total)+' insgesamt. Der Kontostand wird dadurch nicht verändert.';
+ $('pendingDetailsList').innerHTML=rows.length?rows.map(r=>`<div class="pending-row"><div><b>${esc(r.title)}</b><small>${dateLabel(r.due)} · ${esc(accountName(r.account_id))}</small></div><strong class="negative">${money(-Math.abs(Number(r.amount)))}</strong></div>`).join(''):'<p class="positive">Keine offenen Fixkosten in diesem Zeitraum.</p>';
+}
+$('pendingMetric').addEventListener('click',()=>{const panel=$('pendingDetails');panel.hidden=!panel.hidden;if(!panel.hidden)panel.scrollIntoView({behavior:'smooth',block:'nearest'})});
+$('pendingClose').addEventListener('click',()=>{$('pendingDetails').hidden=true});
+$('pendingManage').addEventListener('click',()=>{const btn=document.querySelector('#menu button[data-tab="recurring"]');if(btn)btn.click()});
