@@ -1,0 +1,26 @@
+/* Privat-Apps V2 – Meine Finanzen. Reine Darstellung, keine Daten-/Login-Aenderung. */
+:root{--privat-gruen:#0b3929;--privat-hell:#f8f8f0;--privat-linie:#dce8d9;--privat-text:#173b2b;color:var(--privat-text)}
+body{background:linear-gradient(180deg,#f1f5eb44,#e9efe4bb),url("https://commons.wikimedia.org/wiki/Special:FilePath/Vineyard_during_sunset_%28Unsplash%29.jpg?width=1800") center/cover fixed!important}
+aside{width:252px;background:linear-gradient(170deg,#073524,#0d452f 65%,#0b3024);box-shadow:5px 0 30px #071b1222;z-index:8}
+aside h2{color:#fff9e8;font-size:24px;letter-spacing:-.5px}
+aside button{border-radius:12px;color:#eaf1e8;min-height:44px;font-weight:650}
+aside button.active,aside button:hover{background:#829a42;color:#fff}
+main{margin-left:252px;max-width:none;padding:24px 30px 50px}
+header{background:linear-gradient(115deg,#103f2bd9,#285a36b3);color:white;border-radius:20px;padding:21px 24px;border:1px solid #ffffff55;box-shadow:0 10px 30px #142b1830}
+header h1{color:white}header .muted{color:#f0f4e6}
+.panel,.metric{background:#fffefa!important;border:1px solid #e3e9dd!important;border-radius:17px;box-shadow:0 6px 17px #123e2519}
+.metric{min-height:110px}.metric b{color:#1d5838}
+button{border-radius:12px}button.primary{background:#195f3f;border-color:#195f3f}
+input,select,textarea{border-color:#cbdcca;border-radius:11px}input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid #86a76d;outline-offset:2px}
+#auth{background:linear-gradient(180deg,#092c21da,#0b3225e5),url("https://commons.wikimedia.org/wiki/Special:FilePath/Vineyard_during_sunset_%28Unsplash%29.jpg?width=1800") center/cover!important}
+@media(max-width:980px){
+ aside{position:fixed;inset:auto 0 0 0;width:100%;height:auto;padding:5px 6px calc(8px + env(safe-area-inset-bottom));background:#0b392cf5;border-radius:18px 18px 0 0;box-shadow:0 -5px 20px #173e2518;overflow:visible;z-index:9}
+ aside h2{display:none}#menu{display:flex;align-items:stretch;justify-content:flex-start;gap:3px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}#menu::-webkit-scrollbar{display:none}
+ aside button{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;flex:0 0 auto;min-width:83px;max-width:110px;min-height:54px;padding:8px 9px;font-size:11px;line-height:1.25;white-space:normal;color:#f0efdd}
+ aside button.active{background:#91a83d;color:white}
+ main{margin:0;padding:14px 12px calc(110px + env(safe-area-inset-bottom))}
+ header{padding:17px 16px;border-radius:18px}h1{font-size:24px}
+ .metrics{gap:9px}.metric{min-height:96px;padding:12px}.metric b{font-size:21px}
+}
+@media(max-width:620px){.grid,.formgrid{grid-template-columns:1fr}.panel{padding:14px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media print{aside{display:none!important}main{padding:0!important;margin:0!important}body{background:#fff!important}}
