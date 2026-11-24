@@ -352,7 +352,7 @@ h1{font-size:29px}
 #dashboard .pending-row{padding:10px 0;border-bottom:1px solid #e5eee8;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 #dashboard .pending-row small{display:block}
 @media(max-width:700px){#dashboard .dashboard-top-cards{grid-template-columns:minmax(0,1fr)!important;gap:9px!important}#dashboard .dashboard-top-cards>.metric{grid-column:1/-1!important;min-height:86px!important;padding:14px 16px!important}#dashboard .pending-content b{font-size:24px}}
-</style><link rel="stylesheet" href="gemeinsames-design.css?v=privat-v2"></head><body>
+</style><link rel="stylesheet" href="gemeinsames-design.css?v=finanz-v16"></head><body>
 <div id="auth"><div class="panel"><h2>Anmelden</h2><form id="loginForm"><label>Benutzername<input id="email" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required placeholder="Fabian"></label><label>Passwort<input id="password" type="password" autocomplete="current-password" enterkeyhint="go" required></label><button class="primary" id="loginSubmit" type="submit">Anmelden</button></form><div id="loginMsg" class="message hidden"></div></div></div>
 <aside><h2>◈ Meine Finanzen</h2><button id="mobileMenuToggle" type="button" aria-expanded="false" aria-controls="menu">☰ Menü <span aria-hidden="true">▾</span></button><div id="menu"><button data-tab="dashboard" class="active">◫ Übersicht</button><button data-tab="transactions">⇄ Buchungen</button><button data-tab="analysis">⌕ Auswertung & Filter</button><button data-tab="calendar">▦ Finanzkalender</button><button data-tab="statistics">▥ Statistiken</button><button data-tab="budget">◉ Budgetplanung</button><button data-tab="goals">◇ Sparziele</button><button data-tab="recurring">↻ Fixkosten & Gehalt</button><button data-tab="accounts">▣ Konten & Sparbücher</button><button data-tab="bills">▤ Rechnungen</button><button data-tab="notes">✎ Notizen</button><button data-tab="settings">⚙ Einstellungen</button></div></aside>
 <main><header><div><h1 id="pageTitle">Übersicht</h1><div class="muted" id="spaceLabel">Meine privaten Finanzen</div></div><div class="actions"><span id="userLabel" class="muted"></span><button id="refreshBtn">↻ Aktualisieren</button><button id="logoutBtn">Abmelden</button></div></header><div id="globalMsg" class="message hidden"></div>
@@ -465,4 +465,5 @@ h1{font-size:29px}
   },100));
 })();
 </script>
+  <script src="finanz-design-v16.js?v=16"></script>
 </body></html>
