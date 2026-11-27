@@ -34,3 +34,7 @@ input,select,textarea{background:white;color:#192744;border-color:#d7daeb;border
  #dashboard>.metrics{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}#dashboard>.metrics>.metric{grid-column:1!important}
 }
 @media print{aside,#mobileBottomNav,.finance-menu-shade{display:none!important}main{margin:0!important;padding:0!important}body{background:white!important}}
+
+/* Midnight Premium */
+:root{--privat-midnight:radial-gradient(ellipse at 90% 10%,#8c72c266,transparent 48%),repeating-linear-gradient(155deg,transparent 0 76px,#a9b8e70b 77px 78px,transparent 79px 92px),linear-gradient(35deg,#101b30,#283451 58%,#66558b) fixed;--privat-banner:linear-gradient(115deg,#354565,#75629e);--privat-sidebar:#111c30;--privat-highlight:#8272c5;}
+body{background:var(--privat-midnight)!important}main>header{background:var(--privat-banner)!important;min-height:148px;border-radius:16px!important}main .panel,main .metric{background:#f7f7fc!important;border-radius:16px!important}main>.section>h2,main>.section>h3{color:#f1eefb!important}@media(min-width:981px){aside{width:240px;background:var(--privat-sidebar)!important}main{margin-left:240px!important;padding:24px!important}aside h2::before{width:56px;height:56px;border-radius:14px}#menu button.active,#menu button:hover{background:var(--privat-highlight)!important}}@media(max-width:980px){main>header{min-height:0}}@media print{body{background:white!important}}
